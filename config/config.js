@@ -316,6 +316,23 @@ export default defineConfig({
               ],
             },
             {
+              name: 'product',
+              icon: 'ShoppingCartOutlined',
+              path: '/product',
+              routes: [
+                {
+                  path: '/',
+                  redirect: '/product/category',
+                },
+                {
+                  name: 'category',
+                  icon: 'smile',
+                  path: '/product/category',
+                  component: './product/category',
+                },
+              ],
+            },
+            {
               component: '404',
             },
           ],
