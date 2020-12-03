@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Space, Divider, Card, Tree, Typography } from 'antd';
+import { Card, Divider, message, Modal, Space, Tree, Typography } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import { connect } from 'umi';
 import styles from './style.less';
@@ -63,10 +63,31 @@ export const ProductCategory = (props) => {
     // setCurrent(item);
   };
 
+  const deleteItem = (idsArray) => {
+    dispatch({
+      type: 'productCategory/submit',
+      payload: idsArray,
+    }).then((responseCode) => {
+      if (responseCode === 0) {
+        message.success('Category removed!');
+        // fetch data again after removing category
+        dispatch({
+          type: 'productCategory/fetch',
+        });
+      } else {
+        message.error('Something went wrong!');
+      }
+    });
+  };
+
   const showDeleteModal = (item) => {
-    console.log(item);
-    // setVisible(true);
-    // setCurrent(item);
+    Modal.confirm({
+      title: 'Delete Category',
+      content: `Do you want to delete [${item.name}] category?`,
+      okText: 'Confirm',
+      cancelText: 'Cancel',
+      onOk: () => deleteItem([item.catId]),
+    });
   };
 
   // render content
