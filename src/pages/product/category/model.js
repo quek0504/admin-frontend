@@ -1,4 +1,4 @@
-import { queryProductCategory, removeProductCategory } from './service';
+import { queryProductCategory, addProductCategory, removeProductCategory } from './service';
 
 const Model = {
   namespace: 'productCategory',
@@ -12,10 +12,15 @@ const Model = {
         type: 'queryProductCategory',
         payload: response.data,
       });
+      return response;
     },
     *submit({ payload }, { call }) {
-      const response = yield call(removeProductCategory, payload);
-      return response.code;
+      if (Array.isArray(payload)) {
+        const response = yield call(removeProductCategory, payload);
+        return response;
+      }
+      const response = yield call(addProductCategory, payload);
+      return response;
     },
   },
   reducers: {

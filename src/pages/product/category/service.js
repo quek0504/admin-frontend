@@ -10,3 +10,11 @@ export async function removeProductCategory(params) {
     data: params, // idsArray, eg. params = [1,2,3]
   });
 }
+
+export async function addProductCategory(params) {
+  console.log('Sending Params...');
+  return request('/api/product/category/save', {
+    method: 'POST',
+    data: params,
+  });
+}

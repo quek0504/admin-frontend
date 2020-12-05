@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, Divider, message, Modal, Space, Tree, Typography } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import { connect } from 'umi';
+import OperationModal from './components/OperationModal';
 import styles from './style.less';
 
 const { TreeNode } = Tree;
@@ -21,9 +22,9 @@ export const ProductCategory = (props) => {
   const [autoExpandParent, setAutoExpandParent] = useState(true);
 
   // Modal related state
-  // const [done, setDone] = useState(false);
-  // const [visible, setVisible] = useState(false);
-  // const [current, setCurrent] = useState(undefined);
+  const [visible, setVisible] = useState(false);
+  const [edit, setEdit] = useState(false);
+  const [currentItem, setCurrentItem] = useState(undefined);
 
   useEffect(() => {
     dispatch({
@@ -46,29 +47,71 @@ export const ProductCategory = (props) => {
   };
 
   const onSelect = (selectedKeys, info) => {
-    console.log('onSelect', info);
-    setTreeSelectedKeys(selectedKeys);
+    // add to selected key only when user clicks on the tree node but not on append/edit/delete button
+    // prevent deselect of key when user click on append/edit/delete button
+    if (info.selected && !visible) {
+      console.log('onSelect', info);
+      setTreeSelectedKeys(selectedKeys);
+    }
   };
 
   // Modal related function
   const showAppendModal = (item) => {
-    console.log(item);
-    // setVisible(true);
-    // setCurrent(item);
+    setVisible(true);
+    setEdit(false);
+    setCurrentItem(item);
   };
 
   const showEditModal = (item) => {
-    console.log(item);
-    // setVisible(true);
-    // setCurrent(item);
+    setVisible(true);
+    setEdit(true);
+    setCurrentItem(item);
+  };
+
+  const handleCancel = () => {
+    setVisible(false);
+    setEdit(false);
+    setCurrentItem(undefined);
+  };
+
+  const handleSubmit = (values) => {
+    setVisible(false);
+    setEdit(false);
+    setCurrentItem(undefined);
+
+    dispatch({
+      type: 'productCategory/submit',
+      payload: values,
+    }).then((submitResponse) => {
+      const { newCatId } = submitResponse;
+      const { parentCid } = values;
+      const treeExpandedKey = treeExpandedKeys;
+
+      if (submitResponse.code === 0) {
+        message.success('Transaction successful!');
+        dispatch({
+          type: 'productCategory/fetch',
+        }).then((fetchResponse) => {
+          // if parent node is not already expanded, add parent node key to expanded key
+          if (treeExpandedKey.indexOf(`${parentCid}`) === -1) {
+            setTreeExpandedKeys([...treeExpandedKeys, `${parentCid}`]);
+          }
+          if (fetchResponse.code === 0) {
+            setTreeSelectedKeys([`${newCatId}`]);
+          }
+        });
+      } else {
+        message.error('Request unsuccessful!');
+      }
+    });
   };
 
   const deleteItem = (idsArray) => {
     dispatch({
       type: 'productCategory/submit',
       payload: idsArray,
-    }).then((responseCode) => {
-      if (responseCode === 0) {
+    }).then((response) => {
+      if (response.code === 0) {
         message.success('Category removed!');
         // fetch data again after removing category
         dispatch({
@@ -172,6 +215,14 @@ export const ProductCategory = (props) => {
           </Card>
         </div>
       </PageContainer>
+
+      <OperationModal
+        visible={visible}
+        edit={edit}
+        currentItem={currentItem}
+        onCancel={handleCancel}
+        onSubmit={handleSubmit}
+      />
     </div>
   );
 };
