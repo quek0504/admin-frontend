@@ -35,15 +35,22 @@ const OperationModal = (props) => {
   const handleFinish = (formValues) => {
     if (onSubmit) {
       // Add additional information
-      const submitValues = {
-        parentCid: currentItem.catId,
-        catLevel: currentItem.catLevel + 1,
-        showStatus: 1,
-        sort: 0,
-        productCount: 0,
-        ...formValues,
-      };
-      console.log(submitValues);
+      let submitValues;
+      if (!edit) {
+        submitValues = {
+          parentCid: currentItem.catId,
+          catLevel: currentItem.catLevel + 1,
+          showStatus: 1,
+          sort: 0,
+          productCount: 0,
+          ...formValues, // name, icon, productUnit
+        };
+      } else {
+        submitValues = {
+          catId: currentItem.catId,
+          ...formValues, // name, icon, productUnit
+        };
+      }
       onSubmit(submitValues);
     }
   };

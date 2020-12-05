@@ -1,4 +1,10 @@
-import { queryProductCategory, addProductCategory, removeProductCategory } from './service';
+import {
+  queryProductCategory,
+  queryProductCategoryInfo,
+  addProductCategory,
+  updateProductCategory,
+  removeProductCategory,
+} from './service';
 
 const Model = {
   namespace: 'productCategory',
@@ -14,12 +20,21 @@ const Model = {
       });
       return response;
     },
+    *getInfo({ payload }, { call }) {
+      const response = yield call(queryProductCategoryInfo, payload);
+      return response;
+    },
     *submit({ payload }, { call }) {
+      let callback;
       if (Array.isArray(payload)) {
-        const response = yield call(removeProductCategory, payload);
-        return response;
+        callback = removeProductCategory;
+      } else if (!payload.edit) {
+        callback = addProductCategory;
+      } else {
+        callback = updateProductCategory;
       }
-      const response = yield call(addProductCategory, payload);
+
+      const response = yield call(callback, payload);
       return response;
     },
   },

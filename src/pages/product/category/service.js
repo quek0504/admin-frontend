@@ -4,6 +4,12 @@ export async function queryProductCategory() {
   return request('/api/product/category/list/tree');
 }
 
+export async function queryProductCategoryInfo(params) {
+  return request(`/api/product/category/info/${params.catId}`, {
+    method: 'GET',
+  });
+}
+
 export async function removeProductCategory(params) {
   return request('/api/product/category/delete', {
     method: 'POST',
@@ -12,9 +18,15 @@ export async function removeProductCategory(params) {
 }
 
 export async function addProductCategory(params) {
-  console.log('Sending Params...');
   return request('/api/product/category/save', {
     method: 'POST',
-    data: params,
+    data: params.data,
+  });
+}
+
+export async function updateProductCategory(params) {
+  return request('/api/product/category/update', {
+    method: 'POST',
+    data: params.data,
   });
 }

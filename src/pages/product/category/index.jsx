@@ -65,7 +65,14 @@ export const ProductCategory = (props) => {
   const showEditModal = (item) => {
     setVisible(true);
     setEdit(true);
-    setCurrentItem(item);
+
+    // get latest product category info and put it in modal
+    dispatch({
+      type: 'productCategory/getInfo',
+      payload: item,
+    }).then((response) => {
+      setCurrentItem(response.data);
+    });
   };
 
   const handleCancel = () => {
@@ -81,7 +88,10 @@ export const ProductCategory = (props) => {
 
     dispatch({
       type: 'productCategory/submit',
-      payload: values,
+      payload: {
+        data: values,
+        edit,
+      },
     }).then((submitResponse) => {
       const { newCatId } = submitResponse;
       const { parentCid } = values;
