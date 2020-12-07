@@ -37,12 +37,21 @@ const Model = {
       const response = yield call(callback, payload);
       return response;
     },
+    *dragUpdate({ payload }, { put }) {
+      yield put({
+        type: 'updateProductCategory',
+        payload,
+      })
+    }
   },
   reducers: {
     // reducer naming match 'type'
     queryProductCategory(state, action) {
       return { ...state, data: action.payload };
     },
+    updateProductCategory(state, action) {
+      return { ...state, data: action.payload};
+    }
   },
 };
 export default Model;

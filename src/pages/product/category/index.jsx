@@ -55,6 +55,148 @@ export const ProductCategory = (props) => {
     }
   };
 
+  const onDragEnter = info => {
+    console.log(info);
+  };
+
+  const onDrop = info => {
+    console.log(info);
+
+    const dropKey = info.node.props.eventKey;
+    const dragKey = info.dragNode.props.eventKey;
+    const dropPos = info.node.props.pos.split('-');
+    const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
+
+    // Find matching product category using dragKey/dropKey
+    const loop = (data, key, callback) => {
+      for (let i = 0; i < data.length; i++) {
+        if (data[i].catId === parseInt(key, 10)) { // data[i].catId is num , key is string
+          return callback(data[i], i, data);
+        }
+        if (data[i].children) {
+          loop(data[i].children, key, callback);
+        }
+      }
+    };
+
+    let maxLevel = 0;
+    const countMaxNodeLevel = (node) => {
+      if (node.children != null && node.children.length > 0) {
+        for (let i = 0; i < node.children.length; i++) {
+          if (node.children[i].catLevel > maxLevel) {
+            maxLevel = node.children[i].catLevel;
+          }
+          countMaxNodeLevel(node.children[i]);
+        }
+      }
+    }
+
+    const allowDrop = (dragNode) => {
+
+      countMaxNodeLevel(dragNode);
+
+      let newInsertPos;
+      /* 
+        insert at inner first position after dropPos
+        dragNode new level = dropPos level + 1
+            *dropPos*
+              - *dragNode*
+              - *node*
+              - *node*
+        insert at inner first position of key 'x-x-x'
+        key 'x-x-x' level is 2
+        drag node new level is 3
+      */
+      if (!info.dropToGap) { newInsertPos = dropPos.length; }
+      /* 
+        insert in between nodes OR at last position OR 0-0
+        dragNode new level = dropPos level
+          CASE 1:
+            *dropPos*
+            *dragNode*
+            *node*    
+          CASE 2:
+            *node*
+            *dropPos*
+            *dragNode*
+          CASE3:
+            *dragNode*
+            *node*
+            *node*
+        actual level must -1 
+        eg. key 'x-x' level is 1, key 'x-x-x' level is 2
+      */
+      newInsertPos = dropPos.length - 1; // else
+      // distance of furthest child node to dragging node 
+      const dragNodeDeep = (maxLevel - dragNode.catLevel) < 0 ? 0 : (maxLevel - dragNode.catLevel);
+      return (dragNodeDeep + newInsertPos) <= 3;
+    }
+
+
+    // initialize data
+    const data = [...productCategory.data];
+
+    // Find dragObject
+    let dragObj;
+    loop(data, dragKey, (item, index, arr) => {
+      // item is drag node from callback function
+      // check whether we are allowed to drop the drag node at new position
+      if (allowDrop(item)) {
+        dragObj = item; // condition to proceed
+        arr.splice(index, 1); // remove drag node from tree
+      } else {
+        dragObj = null; // cannot proceed, wont remove drag node from tree
+      }
+    });
+
+    // if not allowed to drop, no drop effect and return
+    if (dragObj == null) {
+      return;
+    }
+
+    if (!info.dropToGap) {
+      // Drop on the content
+      loop(data, dropKey, item => {
+        // item is drop node from callback function
+        item.children = item.children || [];
+        // where to insert 示例添加到头部，可以是随意位置
+        item.children.unshift(dragObj);
+      });
+    } else if (
+      (info.node.props.children || []).length > 0 && // Has children
+      info.node.props.expanded && // Is expanded
+      dropPosition === 1 // On the bottom gap
+    ) {
+      console.log(2);
+      loop(data, dropKey, item => {
+        item.children = item.children || [];
+        // where to insert 示例添加到头部，可以是随意位置
+        item.children.unshift(dragObj);
+        // in previous version, we use item.children.push(dragObj) to insert the
+        // item to the tail of the children
+      });
+    } else {
+      let ar;
+      let i;
+      loop(data, dropKey, (item, index, arr) => {
+        ar = arr;
+        i = index;
+      });
+      if (dropPosition === -1) {
+        ar.splice(i, 0, dragObj);
+      } else {
+        console.log(ar);
+        ar.splice(i + 1, 0, dragObj);
+      }
+    }
+
+    dispatch({
+      type: 'productCategory/dragUpdate',
+      payload: data,
+    })
+
+  };
+
   // Modal related function
   const showAppendModal = (item) => {
     setVisible(true);
@@ -219,6 +361,9 @@ export const ProductCategory = (props) => {
               checkedKeys={treeCheckedKeys}
               onSelect={onSelect}
               selectedKeys={treeSelectedKeys}
+              draggable
+              onDragEnter={onDragEnter}
+              onDrop={onDrop}
             >
               {renderTreeNodes(productCategory.data)}
             </Tree>
