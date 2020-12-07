@@ -30,3 +30,10 @@ export async function updateProductCategory(params) {
     data: params.data,
   });
 }
+
+export async function updateSortProductCategory(params) {
+  return request('/api/product/category/update/sort', {
+    method: 'POST',
+    data: params,
+  });
+}

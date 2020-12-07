@@ -3,6 +3,7 @@ import {
   queryProductCategoryInfo,
   addProductCategory,
   updateProductCategory,
+  updateSortProductCategory,
   removeProductCategory,
 } from './service';
 
@@ -33,24 +34,18 @@ const Model = {
       } else {
         callback = updateProductCategory;
       }
-
       const response = yield call(callback, payload);
       return response;
     },
-    *dragUpdate({ payload }, { put }) {
-      yield put({
-        type: 'updateProductCategory',
-        payload,
-      })
+    *batchUpdate({payload}, {call}) {
+      const response = yield call(updateSortProductCategory, payload);
+      return response;
     }
   },
   reducers: {
     // reducer naming match 'type'
     queryProductCategory(state, action) {
       return { ...state, data: action.payload };
-    },
-    updateProductCategory(state, action) {
-      return { ...state, data: action.payload};
     }
   },
 };

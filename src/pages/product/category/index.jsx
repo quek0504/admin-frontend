@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Divider, message, Modal, Space, Tree, Typography } from 'antd';
+import { Card, Divider, message, Modal, Space, Switch, Tree, Typography } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import { connect } from 'umi';
 import OperationModal from './components/OperationModal';
@@ -20,6 +20,7 @@ export const ProductCategory = (props) => {
   const [treeCheckedKeys, setTreeCheckedKeys] = useState([]);
   const [treeSelectedKeys, setTreeSelectedKeys] = useState([]);
   const [autoExpandParent, setAutoExpandParent] = useState(true);
+  const [draggable, setDraggable] = useState(true);
 
   // Modal related state
   const [visible, setVisible] = useState(false);
@@ -55,11 +56,11 @@ export const ProductCategory = (props) => {
     }
   };
 
-  const onDragEnter = info => {
+  const onDragEnter = (info) => {
     console.log(info);
   };
 
-  const onDrop = info => {
+  const onDrop = (info) => {
     console.log(info);
 
     const dropKey = info.node.props.eventKey;
@@ -70,7 +71,8 @@ export const ProductCategory = (props) => {
     // Find matching product category using dragKey/dropKey
     const loop = (data, key, callback) => {
       for (let i = 0; i < data.length; i++) {
-        if (data[i].catId === parseInt(key, 10)) { // data[i].catId is num , key is string
+        if (data[i].catId === parseInt(key, 10)) {
+          // data[i].catId is num , key is string
           return callback(data[i], i, data);
         }
         if (data[i].children) {
@@ -81,7 +83,7 @@ export const ProductCategory = (props) => {
 
     let maxLevel = 0;
     const countMaxNodeLevel = (node) => {
-      if (node.children != null && node.children.length > 0) {
+      if (node.children !== null && node.children.length > 0) {
         for (let i = 0; i < node.children.length; i++) {
           if (node.children[i].catLevel > maxLevel) {
             maxLevel = node.children[i].catLevel;
@@ -89,16 +91,15 @@ export const ProductCategory = (props) => {
           countMaxNodeLevel(node.children[i]);
         }
       }
-    }
+    };
 
     const allowDrop = (dragNode) => {
-
       countMaxNodeLevel(dragNode);
-
-      let newInsertPos;
+      let newLevel; // drag node new level
       /* 
         insert at inner first position after dropPos
         dragNode new level = dropPos level + 1
+          CASE 1:
             *dropPos*
               - *dragNode*
               - *node*
@@ -107,31 +108,87 @@ export const ProductCategory = (props) => {
         key 'x-x-x' level is 2
         drag node new level is 3
       */
-      if (!info.dropToGap) { newInsertPos = dropPos.length; }
-      /* 
-        insert in between nodes OR at last position OR 0-0
-        dragNode new level = dropPos level
-          CASE 1:
-            *dropPos*
-            *dragNode*
-            *node*    
-          CASE 2:
-            *node*
-            *dropPos*
-            *dragNode*
-          CASE3:
-            *dragNode*
-            *node*
-            *node*
-        actual level must -1 
-        eg. key 'x-x' level is 1, key 'x-x-x' level is 2
-      */
-      newInsertPos = dropPos.length - 1; // else
-      // distance of furthest child node to dragging node 
-      const dragNodeDeep = (maxLevel - dragNode.catLevel) < 0 ? 0 : (maxLevel - dragNode.catLevel);
-      return (dragNodeDeep + newInsertPos) <= 3;
-    }
+      if (!info.dropToGap) {
+        newLevel = dropPos.length;
+      } else {
+        /* 
+          insert in between nodes OR at last position OR 0-0
+          dragNode new level = dropPos level
+            CASE 2:
+              *dropPos*
+              *dragNode*
+              *node*    
+            CASE 3:
+              *node*
+              *dropPos*
+              *dragNode*
+            CASE 4:
+              *dragNode*
+              *node*
+              *node*
+          actual level must -1 
+          eg. key 'x-x' level is 1, key 'x-x-x' level is 2
+        */
+        newLevel = dropPos.length - 1;
+      }
+      // distance of furthest child node to dragging node
+      let dragNodeDeep = maxLevel - dragNode.catLevel < 0 ? 0 : maxLevel - dragNode.catLevel;
+      if (dragNodeDeep + newLevel <= 3) {
+        dragNode.newLevel = newLevel;
+        return true;
+      }
+      return false;
+    };
 
+    let updateNodes = [];
+    let pCid;
+    const updateChildNodeLevel = (node, childLevel) => {
+      if (node.children.length > 0) {
+        for (let i = 0; i < node.children.length; i++) {
+          updateNodes.push({
+            catId: node.children[i].catId,
+            catLevel: childLevel,
+          });
+          updateChildNodeLevel(node.children[i], childLevel + 1);
+        }
+      }
+    };
+
+    const handleUpdateData = (dragNode, dropNode, siblings, type) => {
+      // update parentCid
+      if (type === 'inner') {
+        // case 1
+        pCid = dropNode.catId;
+      } else if (type === 'first') {
+        // case 4
+        pCid = 0;
+      } else if (type === 'after') {
+        // case 2, 3
+        pCid = dropNode.parentCid;
+      }
+
+      // update sort order or drag node and its siblings
+      // update node and children node level if level changed
+      for (let i = 0; i < siblings.length; i++) {
+        if (siblings[i].catId === dragNode.catId) {
+          let {catLevel} = dragNode;
+          // dragNode.newLevel is assigned when we called allowDrop(node)
+          // if condition equivalent to dragNode.catLevel != dragNode.newLevel
+          if (siblings[i].catLevel !== dragNode.newLevel) {
+            catLevel = dragNode.newLevel;
+            updateChildNodeLevel(siblings[i], catLevel + 1);
+          }
+          updateNodes.push({
+            catId: siblings[i].catId,
+            sort: i,
+            parentCid: pCid,
+            catLevel,
+          });
+        } else {
+          updateNodes.push({ catId: siblings[i].catId, sort: i });
+        }
+      }
+    };
 
     // initialize data
     const data = [...productCategory.data];
@@ -154,26 +211,30 @@ export const ProductCategory = (props) => {
       return;
     }
 
+    let dropObj;
     if (!info.dropToGap) {
       // Drop on the content
-      loop(data, dropKey, item => {
+      loop(data, dropKey, (item) => {
+        dropObj = item;
         // item is drop node from callback function
         item.children = item.children || [];
         // where to insert 示例添加到头部，可以是随意位置
         item.children.unshift(dragObj);
+        handleUpdateData(dragObj, dropObj, item.children, 'inner');
       });
     } else if (
       (info.node.props.children || []).length > 0 && // Has children
       info.node.props.expanded && // Is expanded
       dropPosition === 1 // On the bottom gap
     ) {
-      console.log(2);
-      loop(data, dropKey, item => {
+      loop(data, dropKey, (item) => {
+        dropObj = item;
         item.children = item.children || [];
         // where to insert 示例添加到头部，可以是随意位置
         item.children.unshift(dragObj);
         // in previous version, we use item.children.push(dragObj) to insert the
         // item to the tail of the children
+        handleUpdateData(dragObj, dropObj, item.children, 'after');
       });
     } else {
       let ar;
@@ -181,20 +242,35 @@ export const ProductCategory = (props) => {
       loop(data, dropKey, (item, index, arr) => {
         ar = arr;
         i = index;
+        dropObj = item;
       });
       if (dropPosition === -1) {
         ar.splice(i, 0, dragObj);
+        handleUpdateData(dragObj, dropObj, ar, 'first');
       } else {
-        console.log(ar);
         ar.splice(i + 1, 0, dragObj);
+        handleUpdateData(dragObj, dropObj, ar, 'after');
       }
     }
 
     dispatch({
-      type: 'productCategory/dragUpdate',
-      payload: data,
-    })
-
+      type: 'productCategory/batchUpdate',
+      payload: updateNodes,
+    }).then((response) => {
+      if (response.code === 0) {
+        message.success('Transaction successful!');
+        dispatch({
+          type: 'productCategory/fetch',
+        }).then(() => {
+          const treeExpandedKey = treeExpandedKeys;
+          if (treeExpandedKey.indexOf(`${pCid}`) === -1) {
+            setTreeExpandedKeys([...treeExpandedKeys, `${pCid}`]);
+          }
+        });
+      } else {
+        message.error('Request unsuccessful!');
+      }
+    });
   };
 
   // Modal related function
@@ -351,6 +427,18 @@ export const ProductCategory = (props) => {
               padding: '0 32px 40px 32px',
             }}
           >
+            <Switch
+              checkedChildren="Close Draggable Effect"
+              unCheckedChildren="Open Draggable Effect"
+              defaultChecked={draggable}
+              onClick={() => {
+                if (draggable) {
+                  setDraggable(false);
+                } else {
+                  setDraggable(true);
+                }
+              }}
+            />
             {/* Tree inside card */}
             <Tree
               checkable
@@ -361,7 +449,7 @@ export const ProductCategory = (props) => {
               checkedKeys={treeCheckedKeys}
               onSelect={onSelect}
               selectedKeys={treeSelectedKeys}
-              draggable
+              draggable={draggable}
               onDragEnter={onDragEnter}
               onDrop={onDrop}
             >
