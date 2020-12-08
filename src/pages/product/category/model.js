@@ -21,6 +21,12 @@ const Model = {
       });
       return response;
     },
+    *dragUpdate({ payload }, { put }) {
+      yield put({
+        type: 'updateProductCategory',
+        payload,
+      })
+    },
     *getInfo({ payload }, { call }) {
       const response = yield call(queryProductCategoryInfo, payload);
       return response;
@@ -37,7 +43,7 @@ const Model = {
       const response = yield call(callback, payload);
       return response;
     },
-    *batchUpdate({payload}, {call}) {
+    *dragUpdateSubmit({payload}, {call}) {
       const response = yield call(updateSortProductCategory, payload);
       return response;
     }
@@ -46,6 +52,9 @@ const Model = {
     // reducer naming match 'type'
     queryProductCategory(state, action) {
       return { ...state, data: action.payload };
+    },
+    updateProductCategory(state, action) {
+      return { ...state, data: action.payload};
     }
   },
 };

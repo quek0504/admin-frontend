@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Card, Divider, message, Modal, Space, Switch, Tree, Typography } from 'antd';
+import React, { useState, useEffect, useRef } from 'react';
+import { Button, Card, Divider, message, Modal, Space, Switch, Tree, Typography } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import { connect } from 'umi';
 import OperationModal from './components/OperationModal';
@@ -21,6 +21,8 @@ export const ProductCategory = (props) => {
   const [treeSelectedKeys, setTreeSelectedKeys] = useState([]);
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [draggable, setDraggable] = useState(true);
+
+  const updateArray = useRef([]);
 
   // Modal related state
   const [visible, setVisible] = useState(false);
@@ -67,6 +69,8 @@ export const ProductCategory = (props) => {
     const dragKey = info.dragNode.props.eventKey;
     const dropPos = info.node.props.pos.split('-');
     const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
+
+    // other block scope variables : maxLevel ,pCid ,data ,dragObj ,dropObj 
 
     // Find matching product category using dragKey/dropKey
     const loop = (data, key, callback) => {
@@ -140,12 +144,12 @@ export const ProductCategory = (props) => {
       return false;
     };
 
-    let updateNodes = [];
-    let pCid;
     const updateChildNodeLevel = (node, childLevel) => {
       if (node.children.length > 0) {
         for (let i = 0; i < node.children.length; i++) {
-          updateNodes.push({
+          node.children[i].catLevel = childLevel;
+          node.children[i].newLevel = childLevel;
+          updateArray.current.push({
             catId: node.children[i].catId,
             catLevel: childLevel,
           });
@@ -154,6 +158,7 @@ export const ProductCategory = (props) => {
       }
     };
 
+    let pCid;
     const handleUpdateData = (dragNode, dropNode, siblings, type) => {
       // update parentCid
       if (type === 'inner') {
@@ -171,26 +176,27 @@ export const ProductCategory = (props) => {
       // update node and children node level if level changed
       for (let i = 0; i < siblings.length; i++) {
         if (siblings[i].catId === dragNode.catId) {
-          let {catLevel} = dragNode;
+          let { catLevel } = dragNode;
           // dragNode.newLevel is assigned when we called allowDrop(node)
           // if condition equivalent to dragNode.catLevel != dragNode.newLevel
           if (siblings[i].catLevel !== dragNode.newLevel) {
             catLevel = dragNode.newLevel;
+            dragNode.catLevel = dragNode.newLevel;
             updateChildNodeLevel(siblings[i], catLevel + 1);
           }
-          updateNodes.push({
+          updateArray.current.push({
             catId: siblings[i].catId,
             sort: i,
             parentCid: pCid,
             catLevel,
           });
         } else {
-          updateNodes.push({ catId: siblings[i].catId, sort: i });
+          updateArray.current.push({ catId: siblings[i].catId, sort: i });
         }
       }
     };
 
-    // initialize data
+    // Initialize data
     const data = [...productCategory.data];
 
     // Find dragObject
@@ -211,6 +217,7 @@ export const ProductCategory = (props) => {
       return;
     }
 
+    // Find dropObject
     let dropObj;
     if (!info.dropToGap) {
       // Drop on the content
@@ -253,22 +260,15 @@ export const ProductCategory = (props) => {
       }
     }
 
+    // simply update UI here, no data sent
+    // updateArray data is sent to database when button is clicked
     dispatch({
-      type: 'productCategory/batchUpdate',
-      payload: updateNodes,
-    }).then((response) => {
-      if (response.code === 0) {
-        message.success('Transaction successful!');
-        dispatch({
-          type: 'productCategory/fetch',
-        }).then(() => {
-          const treeExpandedKey = treeExpandedKeys;
-          if (treeExpandedKey.indexOf(`${pCid}`) === -1) {
-            setTreeExpandedKeys([...treeExpandedKeys, `${pCid}`]);
-          }
-        });
-      } else {
-        message.error('Request unsuccessful!');
+      type: 'productCategory/dragUpdate',
+      payload: data
+    }).then(() => {
+      const treeExpandedKey = treeExpandedKeys;
+      if (treeExpandedKey.indexOf(`${pCid}`) === -1) {
+        setTreeExpandedKeys([...treeExpandedKeys, `${pCid}`]);
       }
     });
   };
@@ -290,6 +290,16 @@ export const ProductCategory = (props) => {
       payload: item,
     }).then((response) => {
       setCurrentItem(response.data);
+    });
+  };
+
+  const showDeleteModal = (item) => {
+    Modal.confirm({
+      title: 'Delete Category',
+      content: `Do you want to delete [${item.name}] category?`,
+      okText: 'Confirm',
+      cancelText: 'Cancel',
+      onOk: () => deleteItem([item.catId]),
     });
   };
 
@@ -334,6 +344,27 @@ export const ProductCategory = (props) => {
     });
   };
 
+  const handleDragUpdate = () => {
+    if (updateArray.current.length > 0) {
+      dispatch({
+        type: 'productCategory/dragUpdateSubmit',
+        payload: updateArray.current, // useRef
+      }).then((response) => {
+        if (response.code === 0) {
+          message.success('Transaction successful!');
+          updateArray.current = []; // clear data
+          dispatch({
+            type: 'productCategory/fetch',
+          })
+        } else {
+          message.error('Request unsuccessful!');
+        }
+      });
+    } else {
+      message.error('No data selected!');
+    }
+  }
+
   const deleteItem = (idsArray) => {
     dispatch({
       type: 'productCategory/submit',
@@ -348,16 +379,6 @@ export const ProductCategory = (props) => {
       } else {
         message.error('Something went wrong!');
       }
-    });
-  };
-
-  const showDeleteModal = (item) => {
-    Modal.confirm({
-      title: 'Delete Category',
-      content: `Do you want to delete [${item.name}] category?`,
-      okText: 'Confirm',
-      cancelText: 'Cancel',
-      onOk: () => deleteItem([item.catId]),
     });
   };
 
@@ -414,11 +435,12 @@ export const ProductCategory = (props) => {
     });
 
   return (
+    console.log("render"),
     <div>
       <PageContainer>
         <div className={styles.standardTree}>
           <Card
-            className={styles.treeCard}
+            className={styles.buttonCard}
             bordered={false}
             style={{
               marginTop: 24,
@@ -427,18 +449,31 @@ export const ProductCategory = (props) => {
               padding: '0 32px 40px 32px',
             }}
           >
-            <Switch
-              checkedChildren="Close Draggable Effect"
-              unCheckedChildren="Open Draggable Effect"
-              defaultChecked={draggable}
-              onClick={() => {
-                if (draggable) {
-                  setDraggable(false);
-                } else {
-                  setDraggable(true);
-                }
-              }}
-            />
+            <Space>
+              <Switch
+                checkedChildren="Close Draggable Effect"
+                unCheckedChildren="Open Draggable Effect"
+                defaultChecked={draggable}
+                onClick={() => {
+                  setDraggable(!draggable);
+                }}
+              />
+              <Divider orientation="left" />
+              <Button
+                type="primary"
+                onClick={handleDragUpdate}
+              >
+                Submit Update
+                </Button>
+            </Space>
+          </Card>
+          <Card
+            className={styles.treeCard}
+            bordered={false}
+            style={{
+              marginTop: 24,
+            }}
+          >
             {/* Tree inside card */}
             <Tree
               checkable
@@ -457,7 +492,7 @@ export const ProductCategory = (props) => {
             </Tree>
           </Card>
         </div>
-      </PageContainer>
+      </PageContainer >
 
       <OperationModal
         visible={visible}
@@ -466,7 +501,7 @@ export const ProductCategory = (props) => {
         onCancel={handleCancel}
         onSubmit={handleSubmit}
       />
-    </div>
+    </div >
   );
 };
 
