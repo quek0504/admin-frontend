@@ -22,6 +22,7 @@ export const ProductCategory = (props) => {
   const [autoExpandParent, setAutoExpandParent] = useState(true);
   const [draggable, setDraggable] = useState(true);
 
+  const [treeCheckedNodesData, setTreeCheckedNodesData] = useState([]);
   const updateArray = useRef([]);
 
   // Modal related state
@@ -44,9 +45,20 @@ export const ProductCategory = (props) => {
     setAutoExpandParent(false);
   };
 
-  const onCheck = (checkedKeys) => {
-    console.log('onCheck', checkedKeys);
+  const onCheck = (checkedKeys, event) => { 
+    console.log(checkedKeys);
+    // console.log(event) // check default API from official document
+    // find checkNodes name
+    const {checkedNodes} = event;
+    const checkedNodesData = [];
+    for (let i = 0; i < checkedNodes.length; i++) {
+      checkedNodesData.push({
+        'catId': checkedNodes[i].key,
+        'name': checkedNodes[i].title.props.children[0].props.children,
+      })
+    }
     setTreeCheckedKeys(checkedKeys);
+    setTreeCheckedNodesData(checkedNodesData);
   };
 
   const onSelect = (selectedKeys, info) => {
@@ -294,12 +306,21 @@ export const ProductCategory = (props) => {
   };
 
   const showDeleteModal = (item) => {
+    // item is an array
+    const catIds = [];
+    const catNames = [];
+
+    for (let i = 0; i < item.length; i++) {
+      catIds.push(item[i].catId);
+      catNames.push(item[i].name);
+    }
+
     Modal.confirm({
       title: 'Delete Category',
-      content: `Do you want to delete [${item.name}] category?`,
+      content: `Do you want to delete [${catNames}] category? Total items: ${item.length}`,
       okText: 'Confirm',
       cancelText: 'Cancel',
-      onOk: () => deleteItem([item.catId]),
+      onOk: () => deleteItem(catIds),
     });
   };
 
@@ -372,6 +393,17 @@ export const ProductCategory = (props) => {
     }).then((response) => {
       if (response.code === 0) {
         message.success('Category removed!');
+        // remove each checked keys in state to sync
+        idsArray.map(
+          ids => {
+            setTreeCheckedKeys(treeCheckedKeys.filter(
+              checkedKeys => checkedKeys != ids
+            ));
+            setTreeCheckedNodesData(treeCheckedNodesData.filter(
+              checkedNodes => checkedNodes.catId != ids
+            ));
+          }
+        )
         // fetch data again after removing category
         dispatch({
           type: 'productCategory/fetch',
@@ -412,7 +444,7 @@ export const ProductCategory = (props) => {
             key="delete"
             onClick={(e) => {
               e.preventDefault();
-              showDeleteModal(item);
+              showDeleteModal([item]);
             }}
           >
             Delete
@@ -435,7 +467,6 @@ export const ProductCategory = (props) => {
     });
 
   return (
-    console.log("render"),
     <div>
       <PageContainer>
         <div className={styles.standardTree}>
@@ -459,12 +490,29 @@ export const ProductCategory = (props) => {
                 }}
               />
               <Divider orientation="left" />
-              <Button
-                type="primary"
-                onClick={handleDragUpdate}
-              >
-                Submit Update
+              {draggable ?
+                <Button
+                  type="primary"
+                  onClick={handleDragUpdate}
+                >
+                  Submit Update
                 </Button>
+                :
+                null
+              }
+              <Button
+                type="danger"
+                onClick={() => {
+                  if (treeCheckedKeys.length > 0) {
+                    showDeleteModal(treeCheckedNodesData)
+                  } else {
+                    message.error('No data selected!');
+                  }
+                }
+                }
+              >
+                Submit Batch Delete
+              </Button>
             </Space>
           </Card>
           <Card
