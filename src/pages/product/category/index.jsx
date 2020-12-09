@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, Card, Divider, message, Modal, Space, Switch, Tree, Typography } from 'antd';
+import { Button, Card, Divider, message, Modal, Space, Spin, Switch, Tree, Typography } from 'antd';
 import { PageContainer } from '@ant-design/pro-layout';
 import { connect } from 'umi';
 import OperationModal from './components/OperationModal';
@@ -12,6 +12,7 @@ const { Text } = Typography;
 export const ProductCategory = (props) => {
   const {
     dispatch,
+    loading,
     productCategory, // data from model
   } = props;
 
@@ -45,11 +46,11 @@ export const ProductCategory = (props) => {
     setAutoExpandParent(false);
   };
 
-  const onCheck = (checkedKeys, event) => { 
+  const onCheck = (checkedKeys, event) => {
     console.log(checkedKeys);
     // console.log(event) // check default API from official document
     // find checkNodes name
-    const {checkedNodes} = event;
+    const { checkedNodes } = event;
     const checkedNodesData = [];
     for (let i = 0; i < checkedNodes.length; i++) {
       checkedNodesData.push({
@@ -68,10 +69,6 @@ export const ProductCategory = (props) => {
       console.log('onSelect', info);
       setTreeSelectedKeys(selectedKeys);
     }
-  };
-
-  const onDragEnter = (info) => {
-    console.log(info);
   };
 
   const onDrop = (info) => {
@@ -382,7 +379,7 @@ export const ProductCategory = (props) => {
         }
       });
     } else {
-      message.error('No data selected!');
+      message.error('No data changed!');
     }
   }
 
@@ -466,6 +463,8 @@ export const ProductCategory = (props) => {
       return <TreeNode title={item.name} key={item.catId} />;
     });
 
+  console.log("render");
+
   return (
     <div>
       <PageContainer>
@@ -480,40 +479,43 @@ export const ProductCategory = (props) => {
               padding: '0 32px 40px 32px',
             }}
           >
-            <Space>
-              <Switch
-                checkedChildren="Close Draggable Effect"
-                unCheckedChildren="Open Draggable Effect"
-                defaultChecked={draggable}
-                onClick={() => {
-                  setDraggable(!draggable);
-                }}
-              />
-              <Divider orientation="left" />
-              {draggable ?
-                <Button
-                  type="primary"
-                  onClick={handleDragUpdate}
-                >
-                  Submit Update
-                </Button>
-                :
-                null
-              }
-              <Button
-                type="danger"
-                onClick={() => {
-                  if (treeCheckedKeys.length > 0) {
-                    showDeleteModal(treeCheckedNodesData)
-                  } else {
-                    message.error('No data selected!');
-                  }
-                }
-                }
-              >
-                Submit Batch Delete
+            {loading ?
+              <Spin /> :
+              <Space>
+                <Switch
+                  checkedChildren="Close Draggable Effect"
+                  unCheckedChildren="Open Draggable Effect"
+                  defaultChecked={draggable}
+                  onClick={() => {
+                    setDraggable(!draggable);
+                  }}
+                />
+                <Divider orientation="left" />
+                {draggable ?
+                  <Button
+                    type="primary"
+                    onClick={handleDragUpdate}
+                  >
+                    Submit Update
               </Button>
-            </Space>
+                  :
+                  null
+                }
+                <Button
+                  type="danger"
+                  onClick={() => {
+                    if (treeCheckedKeys.length > 0) {
+                      showDeleteModal(treeCheckedNodesData)
+                    } else {
+                      message.error('No data selected!');
+                    }
+                  }
+                  }
+                >
+                  Submit Batch Delete
+            </Button>
+              </Space>
+            }
           </Card>
           <Card
             className={styles.treeCard}
@@ -522,7 +524,6 @@ export const ProductCategory = (props) => {
               marginTop: 24,
             }}
           >
-            {/* Tree inside card */}
             <Tree
               checkable
               onExpand={onExpand}
@@ -533,7 +534,6 @@ export const ProductCategory = (props) => {
               onSelect={onSelect}
               selectedKeys={treeSelectedKeys}
               draggable={draggable}
-              onDragEnter={onDragEnter}
               onDrop={onDrop}
             >
               {renderTreeNodes(productCategory.data)}
@@ -553,6 +553,7 @@ export const ProductCategory = (props) => {
   );
 };
 
-export default connect(({ productCategory }) => ({
+export default connect(({ productCategory, loading }) => ({
   productCategory,
+  loading: loading.models.productCategory
 }))(ProductCategory);
