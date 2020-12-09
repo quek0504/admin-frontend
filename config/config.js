@@ -330,6 +330,12 @@ export default defineConfig({
                   path: '/product/category',
                   component: './product/category',
                 },
+                {
+                  name: 'brand',
+                  icon: 'smile',
+                  path: '/product/brand',
+                  component: './product/brand',
+                },
               ],
             },
             {
