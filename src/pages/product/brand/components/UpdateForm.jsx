@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Form, Button, Input, Modal, Select, Steps } from 'antd';
+import UploadForm from './UploadForm';
 
 const FormItem = Form.Item;
 const { Step } = Steps;
@@ -17,13 +18,10 @@ const formLayout = {
 const UpdateForm = (props) => {
   const [formVals, setFormVals] = useState({
     name: props.values.name,
-    desc: props.values.desc,
+    descript: props.values.descript,
     key: props.values.key,
-    target: '0',
-    template: '0',
-    type: '1',
-    time: '',
-    frequency: 'month',
+    sort: props.values.sort,
+    showStatus: props.values.showStatus
   });
   const [currentStep, setCurrentStep] = useState(0);
   const [form] = Form.useForm();
@@ -54,14 +52,7 @@ const UpdateForm = (props) => {
       return (
         <>
           <FormItem name="logo" label="Logo">
-            <Select
-              style={{
-                width: '100%',
-              }}
-            >
-              <Option value="0">表一</Option>
-              <Option value="1">表二</Option>
-            </Select>
+              <UploadForm />
           </FormItem>
         </>
       );
@@ -70,7 +61,7 @@ const UpdateForm = (props) => {
     if (currentStep === 2) {
       return (
         <>
-          <FormItem name="show_status" label="Show Status">
+          <FormItem name="showStatus" label="Show Status">
             <Select
               style={{
                 width: '100%',
@@ -194,12 +185,10 @@ const UpdateForm = (props) => {
         {...formLayout}
         form={form}
         initialValues={{
-          target: formVals.target,
-          template: formVals.template,
-          type: formVals.type,
-          frequency: formVals.frequency,
           name: formVals.name,
-          desc: formVals.desc,
+          descript: formVals.descript,
+          sort: formVals.sort,
+          showStatus: formVals.showStatus
         }}
       >
         {renderContent()}

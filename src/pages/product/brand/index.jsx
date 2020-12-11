@@ -1,12 +1,13 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Divider, message, Drawer } from 'antd';
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { PageContainer, FooterToolbar } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import ProDescriptions from '@ant-design/pro-descriptions';
 import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
-import { queryRule, addBrand, removeBrand, updateBrand } from './service';
+import { connect } from 'umi';
+import { addBrand, removeBrand, updateBrand } from './service';
 /**
  * 添加节点
  * @param fields
@@ -72,7 +73,13 @@ const handleRemove = async (selectedRows) => {
   }
 };
 
-const TableList = () => {
+const ProductBrand = (props) => {
+
+  const {
+    dispatch,
+    productBrand, // data from model
+  } = props;
+
   const [createModalVisible, handleModalVisible] = useState(false);
   const [updateModalVisible, handleUpdateModalVisible] = useState(false);
   const [stepFormValues, setStepFormValues] = useState({});
@@ -82,7 +89,7 @@ const TableList = () => {
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'brand_id',
+      dataIndex: 'brandId',
       tip: 'Primary Key',
       hideInForm: true,
     },
@@ -104,6 +111,13 @@ const TableList = () => {
     {
       title: 'Logo',
       dataIndex: 'logo',
+      hideInSearch: true,
+      render: (_, entity) => {
+        if (entity.logo) {
+          return <img src={entity.logo} />
+        }
+        return <p>No Image</p>
+      }
     },
     {
       title: 'Description',
@@ -112,7 +126,7 @@ const TableList = () => {
     },
     {
       title: 'Show Status',
-      dataIndex: 'show_status',
+      dataIndex: 'showStatus',
       valueEnum: {
         0: {
           text: 'Hide',
@@ -148,12 +162,19 @@ const TableList = () => {
       ),
     },
   ];
+
+  useEffect(() => {
+    dispatch({
+      type: 'productBrand/fetch',
+    });
+  }, [1]);
+
   return (
     <PageContainer>
       <ProTable
         headerTitle="Brand Management"
         actionRef={actionRef}
-        rowKey="key"
+        rowKey="brandId"
         search={{
           labelWidth: 120,
         }}
@@ -162,8 +183,9 @@ const TableList = () => {
             <PlusOutlined /> New Brand
           </Button>,
         ]}
-        request={(params, sorter, filter) => queryRule({ ...params, sorter, filter })}
+        // request={(params, sorter, filter) => queryRule({ ...params, sorter, filter })}
         columns={columns}
+        dataSource={productBrand.data}
         rowSelection={{
           onChange: (_, selectedRows) => setSelectedRows(selectedRows),
         }}
@@ -197,24 +219,23 @@ const TableList = () => {
           <Button type="primary">Batch Update</Button>
         </FooterToolbar>
       )}
-      <CreateForm onCancel={() => handleModalVisible(false)} modalVisible={createModalVisible}>
-        <ProTable
-          onSubmit={async (value) => {
-            const success = await handleAdd(value);
+      <CreateForm
+        onSubmit={async (value) => {
+          const success = await handleAdd(value);
 
-            if (success) {
-              handleModalVisible(false);
+          if (success) {
+            handleModalVisible(false);
 
-              if (actionRef.current) {
-                actionRef.current.reload();
-              }
+            if (actionRef.current) {
+              actionRef.current.reload();
             }
-          }}
-          rowKey="key"
-          type="form"
-          columns={columns}
-        />
-      </CreateForm>
+          }
+        }}
+        onCancel={() => {
+          handleModalVisible(false)
+        }}
+        modalVisible={createModalVisible}
+      />
       {stepFormValues && Object.keys(stepFormValues).length ? (
         <UpdateForm
           onSubmit={async (value) => {
@@ -263,5 +284,6 @@ const TableList = () => {
     </PageContainer>
   );
 };
-
-export default TableList;
+export default connect(({ productBrand }) => ({
+  productBrand,
+}))(ProductBrand);

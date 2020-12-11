@@ -463,8 +463,6 @@ export const ProductCategory = (props) => {
       return <TreeNode title={item.name} key={item.catId} />;
     });
 
-  console.log("render");
-
   return (
     <div>
       <PageContainer>
