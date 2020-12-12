@@ -66,7 +66,14 @@ const CreateForm = (props) => {
         >
           <TextArea rows={4} placeholder="Description (at least 5 words)" />
         </FormItem>
-        <FormItem name="logo" label="Logo">
+        <FormItem name="logo" label="Logo"
+          rules={[
+            {
+              required: true,
+              message: 'Logo must not be empty!'
+            },
+          ]}
+        >
           <UploadForm setLogoField={setLogoField}></UploadForm>
         </FormItem>
         <FormItem name="showStatus" label="Show Status">

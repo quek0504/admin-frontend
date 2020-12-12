@@ -19,7 +19,7 @@ const UploadForm = (props) => {
     const { setLogoField , dispatch } = props;
 
     const [loading, setLoading] = useState(false);
-    const [fileList, setFileList] = useState([]);
+    const [defaultFileList, setDefaultFileList] = useState([]);
     const [imageUrl, setImageUrl] = useState(undefined);
 
     const handlePreview = (file) => {
@@ -31,10 +31,11 @@ const UploadForm = (props) => {
     // the function will be called when uploading is in progress, completed or failed
     // return { file : {/* ... */}, fileList: [/* ... */], event: {/* ... */}} }
     const handleChange = ({ file, fileList, event }) => {
-        setFileList(fileList);
+        setDefaultFileList(fileList);
         if (file.status == "removed") {
             setImageUrl(undefined);
-            setFileList([]);
+            setLogoField(undefined);
+            setDefaultFileList([]);
         }
     };
 
@@ -84,13 +85,13 @@ const UploadForm = (props) => {
             name="avatar"
             listType="picture-card"
             className="avatar-uploader"
-            fileList={fileList}
+            defaultFileList={defaultFileList}
             beforeUpload={beforeUpload}
             onPreview={handlePreview}
             onChange={handleChange}
             customRequest={uploadImage}
         >
-            {fileList.length == 0 ? uploadButton : null}
+            {defaultFileList.length == 0 ? uploadButton : null}
         </Upload>
     );
 };

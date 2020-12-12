@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Form, Button, Input, Image, Modal, Select, Steps } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Space, Form, Button, Input, Image, Modal, Select, Steps } from 'antd';
 import UploadForm from './UploadForm';
 
 const FormItem = Form.Item;
@@ -16,23 +16,26 @@ const formLayout = {
 };
 
 const UpdateForm = (props) => {
-  const [formVals, setFormVals] = useState({
-    brandId: props.values.brandId,
-    name: props.values.name,
-    descript: props.values.descript,
-    logo: props.values.logo,
-    showStatus: props.values.showStatus,
-    firstLetter: props.values.firstLetter,
-    sort: props.values.sort,
-  });
-  const [currentStep, setCurrentStep] = useState(0);
-  const [form] = Form.useForm();
+
   const {
     onSubmit: handleUpdate,
     onCancel: handleUpdateModalVisible,
     updateModalVisible,
     values,
   } = props;
+
+  const [formVals, setFormVals] = useState();
+  const [currentStep, setCurrentStep] = useState(0);
+  const [form] = Form.useForm();
+
+  useEffect(() => {
+    form.setFieldsValue({
+      ...values,
+    });
+    setFormVals({
+      ...values
+    })
+  }, [props.values]);
 
   const forward = () => setCurrentStep(currentStep + 1);
 
@@ -50,6 +53,7 @@ const UpdateForm = (props) => {
   };
 
   const setLogoField = (endPointUrl) => {
+    setFormVals({ ...formVals, logo: endPointUrl });
     form.setFieldsValue({ logo: endPointUrl });
   };
 
@@ -57,17 +61,29 @@ const UpdateForm = (props) => {
     if (currentStep === 1) {
       return (
         <>
-          <FormItem name="logo" label="Logo">
+          <FormItem
+            name="logo"
+            label="Logo"
+            rules={[
+              {
+                required: true,
+                message: 'Logo must not be empty!'
+              },
+            ]}
+          >
             {formVals.logo ?
-              <>
+              <Space>
                 <Image src={formVals.logo} height={200} width={200} />
-                <Button onClick={
-                  () => setFormVals({ ...formVals, logo: null })
+                <Button danger onClick={
+                  () => {
+                    setFormVals({ ...formVals, logo: undefined });
+                    setLogoField(undefined);
+                  }
                 }
                 >
                   Remove Image
                 </Button>
-              </>
+              </Space>
               :
               <UploadForm setLogoField={setLogoField} />
             }
@@ -205,14 +221,6 @@ const UpdateForm = (props) => {
       <Form
         {...formLayout}
         form={form}
-        initialValues={{
-          name: formVals.name,
-          descript: formVals.descript,
-          logo: formVals.logo,
-          showStatus: formVals.showStatus + '',
-          firstLetter: formVals.firstLetter,
-          sort: formVals.sort,
-        }}
       >
         {renderContent()}
       </Form>

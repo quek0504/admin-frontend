@@ -4,9 +4,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { PageContainer, FooterToolbar } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import ProDescriptions from '@ant-design/pro-descriptions';
+import { connect } from 'umi';
 import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
-import { connect } from 'umi';
 import { addBrand, removeBrand, updateBrand } from './service';
 /**
  * 添加节点
@@ -36,11 +36,7 @@ const handleUpdate = async (fields) => {
   const hide = message.loading('Updating');
 
   try {
-    await updateBrand({
-      name: fields.name,
-      descript: fields.descript,
-      key: fields.key,
-    });
+    await updateBrand({ ...fields });
     hide();
     message.success('Update Successful!');
     return true;
@@ -114,7 +110,7 @@ const ProductBrand = (props) => {
       hideInSearch: true,
       render: (_, entity) => {
         if (entity.logo) {
-          return <Image src={entity.logo} height={200} width={200}/>
+          return <Image src={entity.logo} height={200} width={200} />
         }
         return <p>No Image</p>
       }
