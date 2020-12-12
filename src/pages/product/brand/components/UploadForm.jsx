@@ -16,10 +16,10 @@ const beforeUpload = (file) => {
 }
 
 const UploadForm = (props) => {
-    const { dispatch } = props;
+    const { setLogoField , dispatch } = props;
 
     const [loading, setLoading] = useState(false);
-    const [defaultFileList, setDefaultFileList] = useState([]);
+    const [fileList, setFileList] = useState([]);
     const [imageUrl, setImageUrl] = useState(undefined);
 
     const handlePreview = (file) => {
@@ -31,10 +31,10 @@ const UploadForm = (props) => {
     // the function will be called when uploading is in progress, completed or failed
     // return { file : {/* ... */}, fileList: [/* ... */], event: {/* ... */}} }
     const handleChange = ({ file, fileList, event }) => {
-        setDefaultFileList(fileList);
+        setFileList(fileList);
         if (file.status == "removed") {
             setImageUrl(undefined);
-            setDefaultFileList([]);
+            setFileList([]);
         }
     };
 
@@ -49,7 +49,7 @@ const UploadForm = (props) => {
             type: 'productBrand/getPreSigned',
             payload: file.name
         }).then((response) => {
-            const {url, endPointUrl }= response.data;
+            const { url, endPointUrl } = response.data;
             if (response.code === 0) {
                 dispatch({
                     type: 'productBrand/upload',
@@ -61,6 +61,7 @@ const UploadForm = (props) => {
                     if (uploadResponse.code === 0) {
                         setLoading(false);
                         setImageUrl(endPointUrl);
+                        setLogoField(endPointUrl);
                         onSuccess();
                     } else {
                         message.error("Upload Unsuccessful!")
@@ -79,20 +80,18 @@ const UploadForm = (props) => {
     );
 
     return (
-        <>
-            <Upload
-                name="avatar"
-                listType="picture-card"
-                className="avatar-uploader"
-                defaultFileList={defaultFileList}
-                beforeUpload={beforeUpload}
-                onPreview={handlePreview}
-                onChange={handleChange}
-                customRequest={uploadImage}
-            >
-                {defaultFileList.length == 0 ? uploadButton : null}
-            </Upload>
-        </>
+        <Upload
+            name="avatar"
+            listType="picture-card"
+            className="avatar-uploader"
+            fileList={fileList}
+            beforeUpload={beforeUpload}
+            onPreview={handlePreview}
+            onChange={handleChange}
+            customRequest={uploadImage}
+        >
+            {fileList.length == 0 ? uploadButton : null}
+        </Upload>
     );
 };
 

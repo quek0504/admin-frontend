@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Form, Button, Input, Modal, Select, Steps } from 'antd';
+import { Form, Button, Input, Image, Modal, Select, Steps } from 'antd';
 import UploadForm from './UploadForm';
 
 const FormItem = Form.Item;
@@ -17,11 +17,13 @@ const formLayout = {
 
 const UpdateForm = (props) => {
   const [formVals, setFormVals] = useState({
+    brandId: props.values.brandId,
     name: props.values.name,
     descript: props.values.descript,
-    key: props.values.key,
+    logo: props.values.logo,
+    showStatus: props.values.showStatus,
+    firstLetter: props.values.firstLetter,
     sort: props.values.sort,
-    showStatus: props.values.showStatus
   });
   const [currentStep, setCurrentStep] = useState(0);
   const [form] = Form.useForm();
@@ -47,12 +49,28 @@ const UpdateForm = (props) => {
     }
   };
 
+  const setLogoField = (endPointUrl) => {
+    form.setFieldsValue({ logo: endPointUrl });
+  };
+
   const renderContent = () => {
     if (currentStep === 1) {
       return (
         <>
           <FormItem name="logo" label="Logo">
-              <UploadForm />
+            {formVals.logo ?
+              <>
+                <Image src={formVals.logo} height={200} width={200} />
+                <Button onClick={
+                  () => setFormVals({ ...formVals, logo: null })
+                }
+                >
+                  Remove Image
+                </Button>
+              </>
+              :
+              <UploadForm setLogoField={setLogoField} />
+            }
           </FormItem>
         </>
       );
@@ -70,6 +88,9 @@ const UpdateForm = (props) => {
               <Option value="0">Hide</Option>
               <Option value="1">Show</Option>
             </Select>
+          </FormItem>
+          <FormItem name="firstLetter" label="First Letter">
+            <Input placeholder="First Letter" />
           </FormItem>
           <FormItem name="sort" label="Sort">
             <Input placeholder="Sort" />
@@ -187,8 +208,10 @@ const UpdateForm = (props) => {
         initialValues={{
           name: formVals.name,
           descript: formVals.descript,
+          logo: formVals.logo,
+          showStatus: formVals.showStatus + '',
+          firstLetter: formVals.firstLetter,
           sort: formVals.sort,
-          showStatus: formVals.showStatus
         }}
       >
         {renderContent()}

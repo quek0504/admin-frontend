@@ -1,5 +1,5 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Divider, message, Drawer } from 'antd';
+import { Button, Divider, Image, message, Drawer } from 'antd';
 import React, { useState, useRef, useEffect } from 'react';
 import { PageContainer, FooterToolbar } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
@@ -23,7 +23,7 @@ const handleAdd = async (fields) => {
     return true;
   } catch (error) {
     hide();
-    message.error('Something went wrong, pleease try again!');
+    message.error('Something went wrong, please try again!');
     return false;
   }
 };
@@ -114,7 +114,7 @@ const ProductBrand = (props) => {
       hideInSearch: true,
       render: (_, entity) => {
         if (entity.logo) {
-          return <img src={entity.logo} />
+          return <Image src={entity.logo} height={200} width={200}/>
         }
         return <p>No Image</p>
       }
@@ -137,6 +137,10 @@ const ProductBrand = (props) => {
           status: '1',
         },
       },
+    },
+    {
+      title: 'First Letter',
+      dataIndex: 'firstLetter',
     },
     {
       title: 'Sort',
@@ -226,6 +230,10 @@ const ProductBrand = (props) => {
           if (success) {
             handleModalVisible(false);
 
+            dispatch({
+              type: 'productBrand/fetch'
+            })
+
             if (actionRef.current) {
               actionRef.current.reload();
             }
@@ -244,6 +252,10 @@ const ProductBrand = (props) => {
             if (success) {
               handleUpdateModalVisible(false);
               setStepFormValues({});
+
+              dispatch({
+                type: 'productBrand/fetch'
+              })
 
               if (actionRef.current) {
                 actionRef.current.reload();

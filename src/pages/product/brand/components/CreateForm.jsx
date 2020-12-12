@@ -23,19 +23,24 @@ const CreateForm = (props) => {
 
   const [form] = Form.useForm();
 
+  // Submit form
   const handleSubmit = () => {
     if (!form) return;
     form.submit();
   };
 
+  // Triggered after submitting the form and verifying data successfully
   const handleFinish = (formValues) => {
-    console.log(formValues);
-    onSubmit(formValues);
+    onSubmit(formValues); // props function
+  };
+
+  const setLogoField = (endPointUrl) => {
+    form.setFieldsValue({ logo: endPointUrl });
   };
 
   const renderContent = () => {
     return (
-      <Form {...formLayout} form={form} onFinish={handleFinish}>
+      <Form {...formLayout} form={form} onFinish={handleFinish} initialValues={{showStatus: "0"}}>
         <FormItem
           name="name"
           label="Brand Name"
@@ -62,9 +67,9 @@ const CreateForm = (props) => {
           <TextArea rows={4} placeholder="Description (at least 5 words)" />
         </FormItem>
         <FormItem name="logo" label="Logo">
-          <UploadForm></UploadForm>
+          <UploadForm setLogoField={setLogoField}></UploadForm>
         </FormItem>
-        <FormItem name="show_status" label="Show Status">
+        <FormItem name="showStatus" label="Show Status">
           <Select
             style={{
               width: '100%',
@@ -74,7 +79,50 @@ const CreateForm = (props) => {
             <Option value="1">Show</Option>
           </Select>
         </FormItem>
-        <FormItem name="sort" label="Sort">
+        <FormItem
+          name="firstLetter"
+          label="First Letter"
+          rules={[
+            {
+              required: true,
+              message: 'First letter must not be empty!'
+            },
+            {
+              validator(rule, value) {
+                if (value == undefined) {
+                  return Promise.reject(); // covered by required rule
+                }
+                if (value.length > 0 && !/^[a-zA-Z]$/.test(value)) {
+                  return Promise.reject('First letter must be (A-Z) or (a-z) !');
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
+          <Input placeholder="First Letter" />
+        </FormItem>
+        <FormItem
+          name="sort"
+          label="Sort"
+          rules={[
+            {
+              required: true,
+              message: 'Sort must not be empty!'
+            },
+            {
+              validator(rule, value) {
+                if (value == undefined) {
+                  return Promise.reject(); // covered by required rule
+                }
+                if (isNaN(value) || value < 0) {
+                  return Promise.reject('Sort value must be a positive integer');
+                }
+                return Promise.resolve();
+              },
+            },
+          ]}
+        >
           <Input placeholder="Sort" />
         </FormItem>
       </Form>

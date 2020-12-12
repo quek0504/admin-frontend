@@ -16,7 +16,6 @@ const Model = {
                 type: 'queryProductBrand',
                 payload: response.page.list,
             });
-            console.log(response.page.list);
         },
         *getPreSigned({ payload }, { call }) {
             const response = yield call(getPreSignedData, payload);
