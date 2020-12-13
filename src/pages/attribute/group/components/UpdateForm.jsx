@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Space, Form, Button, Input, Image, Modal, Select, Steps } from 'antd';
-import UploadForm from './UploadForm';
+import { Space, Form, Button, Input, Image, Modal, Steps } from 'antd';
 
 const FormItem = Form.Item;
 const { Step } = Steps;
 const { TextArea } = Input;
-const { Option } = Select;
 const formLayout = {
   labelCol: {
     span: 7,
@@ -52,41 +50,15 @@ const UpdateForm = (props) => {
     }
   };
 
-  const setLogoField = (endPointUrl) => {
-    setFormVals({ ...formVals, logo: endPointUrl });
-    form.setFieldsValue({ logo: endPointUrl });
-  };
+  // const setLogoField = (endPointUrl) => {
+  //   setFormVals({ ...formVals, logo: endPointUrl });
+  //   form.setFieldsValue({ logo: endPointUrl });
+  // };
 
   const renderContent = () => {
     if (currentStep === 1) {
       return (
         <>
-          <FormItem
-            name="logo"
-            label="Logo"
-            rules={[
-              {
-                required: true,
-                message: 'Logo must not be empty!'
-              },
-            ]}
-          >
-            {formVals.logo ?
-              <Space>
-                <Image src={formVals.logo} height={200} width={200} />
-                <Button danger onClick={
-                  () => {
-                    setLogoField(undefined);
-                  }
-                }
-                >
-                  Remove Image
-                </Button>
-              </Space>
-              :
-              <UploadForm setLogoField={setLogoField} />
-            }
-          </FormItem>
         </>
       );
     }
@@ -94,21 +66,11 @@ const UpdateForm = (props) => {
     if (currentStep === 2) {
       return (
         <>
-          <FormItem name="showStatus" label="Show Status">
-            <Select
-              style={{
-                width: '100%',
-              }}
-            >
-              <Option value="0">Hide</Option>
-              <Option value="1">Show</Option>
-            </Select>
-          </FormItem>
-          <FormItem name="firstLetter" label="First Letter">
-            <Input placeholder="First Letter" />
-          </FormItem>
           <FormItem name="sort" label="Sort">
             <Input placeholder="Sort" />
+          </FormItem>
+          <FormItem name="catelogId" label="Category ID">
+            <Input placeholder="Category ID" />
           </FormItem>
         </>
       );
@@ -117,16 +79,16 @@ const UpdateForm = (props) => {
     return (
       <>
         <FormItem
-          name="name"
-          label="Brand Name"
+          name="attrGroupName"
+          label="Attribute Group Name"
           rules={[
             {
               required: true,
-              message: 'Brand name must not be empty！',
+              message: 'Attribute group name must not be empty！',
             },
           ]}
         >
-          <Input placeholder="Brand Name" />
+          <Input placeholder="Attribute Group Name" />
         </FormItem>
         <FormItem
           name="descript"
@@ -201,7 +163,7 @@ const UpdateForm = (props) => {
         padding: '32px 40px 48px',
       }}
       destroyOnClose
-      title="Brand Update"
+      title="Attribute Group Update"
       visible={updateModalVisible}
       footer={renderFooter()}
       onCancel={() => handleUpdateModalVisible()}
@@ -215,7 +177,7 @@ const UpdateForm = (props) => {
       >
         <Step title="Basic Info" />
         <Step title="Upload Picture" />
-        <Step title="Brand Status" />
+        <Step title="Attribute Group Status" />
       </Steps>
       <Form
         {...formLayout}

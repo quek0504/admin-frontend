@@ -5,9 +5,7 @@ export async function queryProductCategory() {
 }
 
 export async function queryProductCategoryInfo(params) {
-  return request(`/api/product/category/info/${params.catId}`, {
-    method: 'GET',
-  });
+  return request(`/api/product/category/info/${params}`);
 }
 
 export async function removeProductCategory(params) {

@@ -339,6 +339,23 @@ export default defineConfig({
               ],
             },
             {
+              name: 'attribute',
+              icon: 'BarsOutlined',
+              path: '/attribute',
+              routes: [
+                {
+                  path: '/',
+                  redirect: '/attribute/group',
+                },
+                {
+                  name: 'group',
+                  icon: 'smile',
+                  path: '/attribute/group',
+                  component: './attribute/group',
+                },
+              ],
+            },
+            {
               component: '404',
             },
           ],

@@ -296,7 +296,7 @@ export const ProductCategory = (props) => {
     // get latest product category info and put it in modal
     dispatch({
       type: 'productCategory/getInfo',
-      payload: item,
+      payload: item.catId,
     }).then((response) => {
       setCurrentItem(response.data);
     });

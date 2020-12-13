@@ -1,10 +1,8 @@
 import React from 'react';
-import { Form, Input, Modal, Select } from 'antd';
-import UploadForm from './UploadForm';
+import { Form, Input, Modal } from 'antd';
 
 const FormItem = Form.Item;
 const { TextArea } = Input;
-const { Option } = Select;
 const formLayout = {
   labelCol: {
     span: 7,
@@ -34,24 +32,24 @@ const CreateForm = (props) => {
     onSubmit(formValues); // props function
   };
 
-  const setLogoField = (endPointUrl) => {
-    form.setFieldsValue({ logo: endPointUrl });
-  };
+  // const setLogoField = (endPointUrl) => {
+  //   form.setFieldsValue({ logo: endPointUrl });
+  // };
 
   const renderContent = () => {
     return (
-      <Form {...formLayout} form={form} onFinish={handleFinish} initialValues={{showStatus: "0"}}>
+      <Form {...formLayout} form={form} onFinish={handleFinish}>
         <FormItem
-          name="name"
-          label="Brand Name"
+          name="attrGroupName"
+          label="Attribute Group"
           rules={[
             {
               required: true,
-              message: 'Brand name must not be empty！',
+              message: 'Attribute group name must not be empty！',
             },
           ]}
         >
-          <Input placeholder="Brand Name" />
+          <Input placeholder="Attribute Group Name" />
         </FormItem>
         <FormItem
           name="descript"
@@ -66,7 +64,7 @@ const CreateForm = (props) => {
         >
           <TextArea rows={4} placeholder="Description (at least 5 words)" />
         </FormItem>
-        <FormItem name="logo" label="Logo"
+        {/* <FormItem name="logo" label="Logo"
           rules={[
             {
               required: true,
@@ -75,40 +73,7 @@ const CreateForm = (props) => {
           ]}
         >
           <UploadForm setLogoField={setLogoField}></UploadForm>
-        </FormItem>
-        <FormItem name="showStatus" label="Show Status">
-          <Select
-            style={{
-              width: '100%',
-            }}
-          >
-            <Option value="0">Hide</Option>
-            <Option value="1">Show</Option>
-          </Select>
-        </FormItem>
-        <FormItem
-          name="firstLetter"
-          label="First Letter"
-          rules={[
-            {
-              required: true,
-              message: 'First letter must not be empty!'
-            },
-            {
-              validator(rule, value) {
-                if (value == undefined) {
-                  return Promise.reject(); // covered by required rule
-                }
-                if (value.length > 0 && !/^[a-zA-Z]$/.test(value)) {
-                  return Promise.reject('First letter must be (A-Z) or (a-z) !');
-                }
-                return Promise.resolve();
-              },
-            },
-          ]}
-        >
-          <Input placeholder="First Letter" />
-        </FormItem>
+        </FormItem> */}
         <FormItem
           name="sort"
           label="Sort"
@@ -132,6 +97,18 @@ const CreateForm = (props) => {
         >
           <Input placeholder="Sort" />
         </FormItem>
+        <FormItem
+          name="catelogId"
+          label="Category ID"
+          rules={[
+            {
+              required: true,
+              message: 'Category ID must not be empty!'
+            }
+          ]}
+        >
+          <Input placeholder="Category ID" />
+        </FormItem>
       </Form>
     );
   };
@@ -139,7 +116,7 @@ const CreateForm = (props) => {
   return (
     <Modal
       destroyOnClose
-      title="New Brand"
+      title="New Attribute Group"
       visible={modalVisible}
       onCancel={onCancel}
       onOk={handleSubmit}

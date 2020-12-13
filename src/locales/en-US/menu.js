@@ -52,4 +52,6 @@ export default {
   'menu.product': 'Product',
   'menu.product.category': 'Category',
   'menu.product.brand': 'Brand',
+  'menu.attribute': 'Attribute',
+  'menu.attribute.group': 'Group',
 };
