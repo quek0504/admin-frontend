@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { PageContainer, FooterToolbar } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import ProDescriptions from '@ant-design/pro-descriptions';
+import Media from 'react-media';
 import { connect } from 'umi';
 import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
@@ -108,6 +109,7 @@ const ProductBrand = (props) => {
       title: 'Logo',
       dataIndex: 'logo',
       hideInSearch: true,
+      hideOnSmall: true,
       render: (_, entity) => {
         if (entity.logo) {
           return <Image src={entity.logo} height={200} width={200} />
@@ -146,6 +148,7 @@ const ProductBrand = (props) => {
       title: 'Action',
       dataIndex: 'option',
       valueType: 'option',
+      hideOnSmall: true,
       render: (_, record) => (
         <>
           <a
@@ -163,6 +166,9 @@ const ProductBrand = (props) => {
     },
   ];
 
+  const getResponsiveColumns = (smallScreen) =>
+    columns.filter(({ hideOnSmall = false }) => !(smallScreen && hideOnSmall));
+
   useEffect(() => {
     dispatch({
       type: 'productBrand/fetch',
@@ -171,25 +177,32 @@ const ProductBrand = (props) => {
 
   return (
     <PageContainer>
-      <ProTable
-        headerTitle="Brand Management"
-        actionRef={actionRef}
-        rowKey="brandId"
-        search={{
-          labelWidth: 120,
-        }}
-        toolBarRender={() => [
-          <Button type="primary" onClick={() => handleModalVisible(true)}>
-            <PlusOutlined /> New Brand
-          </Button>,
-        ]}
-        // request={(params, sorter, filter) => queryRule({ ...params, sorter, filter })}
-        columns={columns}
-        dataSource={productBrand.data}
-        rowSelection={{
-          onChange: (_, selectedRows) => setSelectedRows(selectedRows),
-        }}
-      />
+      <Media query="(max-width: 992px)">
+        {smallScreen => {
+          return (
+            <ProTable
+              headerTitle="Brand Management"
+              actionRef={actionRef}
+              rowKey="brandId"
+              search={{
+                labelWidth: 120,
+              }}
+              toolBarRender={() => [
+                <Button type="primary" onClick={() => handleModalVisible(true)}>
+                  <PlusOutlined /> New Brand
+                </Button>,
+              ]}
+              // request={(params, sorter, filter) => queryRule({ ...params, sorter, filter })}
+              columns={getResponsiveColumns(smallScreen)}
+              dataSource={productBrand.data}
+              rowSelection={{
+                onChange: (_, selectedRows) => setSelectedRows(selectedRows),
+              }}
+            />
+          )
+        }
+        }
+      </Media>
       {selectedRowsState?.length > 0 && (
         <FooterToolbar
           extra={

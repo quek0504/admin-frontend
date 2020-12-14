@@ -65,28 +65,20 @@ const CategoryTree = (props) => {
 
     return (
         <div className={styles.standardTree}>
-            <Card
-                className={styles.treeCard}
-                bordered={false}
-                style={{
-                    marginTop: 24,
-                }}
-            >
-                <Space direction="vertical">
-                    <Tooltip placement="topLeft" title="Click on third level category to load attribute group">
-                        <Button>Hint</Button>
-                    </Tooltip>
-                    <Tree
-                        onExpand={onExpand}
-                        expandedKeys={treeExpandedKeys}
-                        autoExpandParent={autoExpandParent}
-                        onSelect={onSelect}
-                        selectedKeys={treeSelectedKeys}
-                    >
-                        {renderTreeNodes(productCategory.data)}
-                    </Tree>
-                </Space>
-            </Card>
+            <Space direction="vertical">
+                <Tooltip placement="topLeft" title="Click on third level category to load attribute group">
+                    <Button>Hint</Button>
+                </Tooltip>
+                <Tree
+                    onExpand={onExpand}
+                    expandedKeys={treeExpandedKeys}
+                    autoExpandParent={autoExpandParent}
+                    onSelect={onSelect}
+                    selectedKeys={treeSelectedKeys}
+                >
+                    {renderTreeNodes(productCategory.data)}
+                </Tree>
+            </Space>
         </div>
     );
 };

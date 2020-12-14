@@ -3,6 +3,7 @@ import { Button, Divider, Image, message } from 'antd';
 import React, { useState, useRef, useEffect } from 'react';
 import { FooterToolbar } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
+import Media from 'react-media';
 import { connect } from 'umi';
 import CreateForm from './CreateForm';
 import UpdateForm from './UpdateForm';
@@ -109,6 +110,7 @@ const GroupTable = (props) => {
             title: 'Icon',
             dataIndex: 'icon',
             hideInSearch: true,
+            hideOnSmall: true,
             render: (_, entity) => {
                 if (entity.logo) {
                     return <Image src={entity.logo} height={200} width={200} />
@@ -133,6 +135,7 @@ const GroupTable = (props) => {
             title: 'Action',
             dataIndex: 'option',
             valueType: 'option',
+            hideOnSmall: true,
             render: (_, record) => (
                 <>
                     <a
@@ -150,6 +153,9 @@ const GroupTable = (props) => {
         },
     ];
 
+    const getResponsiveColumns = (smallScreen) =>
+        columns.filter(({ hideOnSmall = false }) => !(smallScreen && hideOnSmall));
+
     useEffect(() => {
         // fetch all attribute groups, no path variable
         // for testing only
@@ -160,25 +166,31 @@ const GroupTable = (props) => {
 
     return (
         <div className={styles.standardTable}>
-            <ProTable
-                headerTitle="Attribute Group Management"
-                actionRef={actionRef}
-                rowKey="attrGroupId"
-                search={{
-                    labelWidth: 120,
+            <Media query="(max-width: 992px)">
+                {smallScreen => {
+                    return (
+                        <ProTable
+                            headerTitle="Attribute Group Management"
+                            actionRef={actionRef}
+                            rowKey="attrGroupId"
+                            search={{
+                                labelWidth: 120,
+                            }}
+                            toolBarRender={() => [
+                                <Button type="primary" onClick={() => handleModalVisible(true)}>
+                                    <PlusOutlined /> New Group
+                                </Button>,
+                            ]}
+                            // request={(params, sorter, filter) => queryRule({ ...params, sorter, filter })}
+                            columns={getResponsiveColumns(smallScreen)}
+                            dataSource={attrGroup.data}
+                            rowSelection={{
+                                onChange: (_, selectedRows) => setSelectedRows(selectedRows),
+                            }}
+                        />
+                    )
                 }}
-                toolBarRender={() => [
-                    <Button type="primary" onClick={() => handleModalVisible(true)}>
-                        <PlusOutlined /> New Brand
-                    </Button>,
-                ]}
-                // request={(params, sorter, filter) => queryRule({ ...params, sorter, filter })}
-                columns={columns}
-                dataSource={attrGroup.data}
-                rowSelection={{
-                    onChange: (_, selectedRows) => setSelectedRows(selectedRows),
-                }}
-            />
+            </Media>
             {selectedRowsState?.length > 0 && (
                 <FooterToolbar
                     extra={
@@ -258,7 +270,7 @@ const GroupTable = (props) => {
         </div>
     );
 };
-export default connect(({ attrGroup , loading }) => ({
+export default connect(({ attrGroup, loading }) => ({
     attrGroup,
     loading: loading.models.attrGroup
 }))(GroupTable);
