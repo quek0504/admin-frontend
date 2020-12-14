@@ -3,7 +3,6 @@ import { Button, Card, Divider, message, Modal, Space, Spin, Switch, Tree, Typog
 import { PageContainer } from '@ant-design/pro-layout';
 import { connect } from 'umi';
 import OperationModal from './components/OperationModal';
-import styles from './style.less';
 
 const { TreeNode } = Tree;
 
@@ -466,78 +465,77 @@ export const ProductCategory = (props) => {
   return (
     <div>
       <PageContainer>
-        <div className={styles.standardTree}>
-          <Card
-            className={styles.buttonCard}
-            bordered={false}
-            style={{
-              marginTop: 24,
-            }}
-            bodyStyle={{
-              padding: '0 32px 40px 32px',
-            }}
-          >
-            {loading ?
-              <Spin /> :
-              <Space>
-                <Switch
-                  checkedChildren="Close Draggable Effect"
-                  unCheckedChildren="Open Draggable Effect"
-                  defaultChecked={draggable}
-                  onClick={() => {
-                    setDraggable(!draggable);
-                  }}
-                />
-                <Divider orientation="left" />
-                {draggable ?
-                  <Button
-                    type="primary"
-                    onClick={handleDragUpdate}
-                  >
-                    Submit Update
-              </Button>
-                  :
-                  null
-                }
+        <Card
+          bordered={false}
+          style={{
+            marginTop: 24,
+          }}
+          bodyStyle={{
+            padding: '0 32px 40px 32px',
+          }}
+        >
+          {loading ?
+            <div style={{ padding: '20px 20px 0px 0px' }}>
+              <Spin tip="category loading..." />
+            </div>
+            :
+            <Space>
+              <Switch
+                checkedChildren="Close Draggable Effect"
+                unCheckedChildren="Open Draggable Effect"
+                defaultChecked={draggable}
+                onClick={() => {
+                  setDraggable(!draggable);
+                }}
+              />
+              <Divider orientation="left" />
+              {draggable ?
                 <Button
-                  type="danger"
-                  onClick={() => {
-                    if (treeCheckedKeys.length > 0) {
-                      showDeleteModal(treeCheckedNodesData)
-                    } else {
-                      message.error('No data selected!');
-                    }
-                  }
-                  }
+                  type="primary"
+                  onClick={handleDragUpdate}
                 >
-                  Submit Batch Delete
+                  Submit Update
+              </Button>
+                :
+                null
+              }
+              <Button
+                type="danger"
+                onClick={() => {
+                  if (treeCheckedKeys.length > 0) {
+                    showDeleteModal(treeCheckedNodesData)
+                  } else {
+                    message.error('No data selected!');
+                  }
+                }
+                }
+              >
+                Submit Batch Delete
             </Button>
-              </Space>
-            }
-          </Card>
-          <Card
-            className={styles.treeCard}
-            bordered={false}
-            style={{
-              marginTop: 24,
-            }}
+            </Space>
+          }
+        </Card>
+        <Card
+          bordered={false}
+          style={{
+            marginTop: 24,
+          }}
+        >
+          <Tree
+            checkable
+            onExpand={onExpand}
+            expandedKeys={treeExpandedKeys}
+            autoExpandParent={autoExpandParent}
+            onCheck={onCheck}
+            checkedKeys={treeCheckedKeys}
+            onSelect={onSelect}
+            selectedKeys={treeSelectedKeys}
+            draggable={draggable}
+            onDrop={onDrop}
           >
-            <Tree
-              checkable
-              onExpand={onExpand}
-              expandedKeys={treeExpandedKeys}
-              autoExpandParent={autoExpandParent}
-              onCheck={onCheck}
-              checkedKeys={treeCheckedKeys}
-              onSelect={onSelect}
-              selectedKeys={treeSelectedKeys}
-              draggable={draggable}
-              onDrop={onDrop}
-            >
-              {renderTreeNodes(productCategory.data)}
-            </Tree>
-          </Card>
-        </div>
+            {renderTreeNodes(productCategory.data)}
+          </Tree>
+        </Card>
       </PageContainer >
 
       <OperationModal

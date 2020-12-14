@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Space, Tooltip, Button, Card, Tree } from 'antd';
+import { Space, Tooltip, Button, Spin, Tree } from 'antd';
 import { connect } from 'umi';
-import styles from '../style.less';
 
 const { TreeNode } = Tree;
 
@@ -9,6 +8,7 @@ const CategoryTree = (props) => {
     const {
         dispatch,
         productCategory, // data from model
+        loading,
     } = props;
 
     // Tree related state
@@ -64,26 +64,35 @@ const CategoryTree = (props) => {
         });
 
     return (
-        <div className={styles.standardTree}>
+        <div>
             <Space direction="vertical">
-                <Tooltip placement="topLeft" title="Click on third level category to load attribute group">
-                    <Button>Hint</Button>
-                </Tooltip>
-                <Tree
-                    onExpand={onExpand}
-                    expandedKeys={treeExpandedKeys}
-                    autoExpandParent={autoExpandParent}
-                    onSelect={onSelect}
-                    selectedKeys={treeSelectedKeys}
-                >
-                    {renderTreeNodes(productCategory.data)}
-                </Tree>
+                {loading ?
+                    <div stlye={{ padding: '50px' }}>
+                        <Spin tip="category loading..." />
+                    </div>
+                    :
+                    <>
+                        <Tooltip placement="topLeft" title="Click on third level category to load attribute group">
+                            <Button>Hint</Button>
+                        </Tooltip>
+                        <Tree
+                            onExpand={onExpand}
+                            expandedKeys={treeExpandedKeys}
+                            autoExpandParent={autoExpandParent}
+                            onSelect={onSelect}
+                            selectedKeys={treeSelectedKeys}
+                        >
+                            {renderTreeNodes(productCategory.data)}
+                        </Tree>
+                    </>
+                }
             </Space>
         </div>
     );
 };
 
-export default connect(({ productCategory, attrGroup }) => ({
+export default connect(({ productCategory, attrGroup, loading }) => ({
     productCategory,
+    loading: loading.models.productCategory,
     attrGroup
 }))(CategoryTree);

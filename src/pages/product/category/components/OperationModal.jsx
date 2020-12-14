@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { Modal, Form, Input } from 'antd';
-import styles from '../style.less';
 
 const formLayout = {
   labelCol: {
@@ -83,7 +82,6 @@ const OperationModal = (props) => {
   return (
     <Modal
       title={edit === false ? 'Add Category Form' : 'Edit Category Form'}
-      className={styles.standardListForm}
       width={640}
       bodyStyle={{
         padding: '28px 0 0',

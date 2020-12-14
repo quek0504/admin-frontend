@@ -8,7 +8,6 @@ import { connect } from 'umi';
 import CreateForm from './CreateForm';
 import UpdateForm from './UpdateForm';
 import { queryAttrGroup, addAttrGroup, removeAttrGroup, updateAttrGroup } from '../service';
-import styles from '../style.less';
 
 /**
  * 添加节点
@@ -165,7 +164,7 @@ const GroupTable = (props) => {
     }, [1]);
 
     return (
-        <div className={styles.standardTable}>
+        <div>
             <Media query="(max-width: 992px)">
                 {smallScreen => {
                     return (
