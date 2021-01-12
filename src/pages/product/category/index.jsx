@@ -95,7 +95,7 @@ export const ProductCategory = (props) => {
 
     let maxLevel = 0;
     const countMaxNodeLevel = (node) => {
-      if (node.children !== null && node.children.length > 0) {
+      if (node.children) {
         for (let i = 0; i < node.children.length; i++) {
           if (node.children[i].catLevel > maxLevel) {
             maxLevel = node.children[i].catLevel;
@@ -153,7 +153,7 @@ export const ProductCategory = (props) => {
     };
 
     const updateChildNodeLevel = (node, childLevel) => {
-      if (node.children.length > 0) {
+      if (node.children) {
         for (let i = 0; i < node.children.length; i++) {
           node.children[i].catLevel = childLevel;
           node.children[i].newLevel = childLevel;
@@ -415,7 +415,7 @@ export const ProductCategory = (props) => {
     return (
       <Space size="large" split={<Divider type="vertical" />}>
         <Text strong>{item.name}</Text>
-        {item.catLevel <= 2 ? (
+        {!draggable && item.catLevel <= 2 ? (
           <a
             key="append"
             onClick={(e) => {
@@ -435,7 +435,7 @@ export const ProductCategory = (props) => {
         >
           Edit
         </a>
-        {item.children.length === 0 ? (
+        {!item.children || item.children.length === 0 ? (
           <a
             key="delete"
             onClick={(e) => {
@@ -459,7 +459,7 @@ export const ProductCategory = (props) => {
           </TreeNode>
         );
       }
-      return <TreeNode title={item.name} key={item.catId} />;
+      return <TreeNode title={treeNodeContent(item)} key={item.catId} />;
     });
 
   return (

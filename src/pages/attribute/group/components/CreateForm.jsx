@@ -1,5 +1,5 @@
 import React from 'react';
-import { Form, Input, Modal } from 'antd';
+import { Cascader, Form, Input, Modal } from 'antd';
 
 const FormItem = Form.Item;
 const { TextArea } = Input;
@@ -17,6 +17,7 @@ const CreateForm = (props) => {
     onSubmit,
     onCancel,
     modalVisible,
+    productCategory
   } = props;
 
   const [form] = Form.useForm();
@@ -29,12 +30,23 @@ const CreateForm = (props) => {
 
   // Triggered after submitting the form and verifying data successfully
   const handleFinish = (formValues) => {
+    formValues = {
+      ...formValues,
+      // cascader field is an array [level1,level2..], only last level categoryId will be sent
+      categoryId: formValues.categoryId[formValues.categoryId.length - 1]
+    }
     onSubmit(formValues); // props function
   };
 
   // const setLogoField = (endPointUrl) => {
   //   form.setFieldsValue({ logo: endPointUrl });
   // };
+
+  const filter = (inputValue, path) => {
+    // default fieldname of 'label' changed to 'name' here
+    // option.label.toLowerCase() => option.name.toLowerCase() 
+    return path.some(option => option.name.toLowerCase().indexOf(inputValue.toLowerCase()) > -1);
+  }
 
   const renderContent = () => {
     return (
@@ -98,7 +110,7 @@ const CreateForm = (props) => {
           <Input placeholder="Sort" />
         </FormItem>
         <FormItem
-          name="catelogId"
+          name="categoryId"
           label="Category ID"
           rules={[
             {
@@ -107,7 +119,12 @@ const CreateForm = (props) => {
             }
           ]}
         >
-          <Input placeholder="Category ID" />
+          <Cascader
+            placeholder="Please select"
+            options={productCategory.data}
+            fieldNames={{ label: 'name', value: 'catId', children: 'children' }}
+            showSearch={{ filter }}
+          />
         </FormItem>
       </Form>
     );
@@ -120,6 +137,7 @@ const CreateForm = (props) => {
       visible={modalVisible}
       onCancel={onCancel}
       onOk={handleSubmit}
+      width={1000}
     >
       {renderContent()}
     </Modal>

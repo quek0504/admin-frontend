@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Space, Form, Button, Input, Image, Modal, Steps } from 'antd';
+import { Cascader, Space, Form, Button, Input, Image, Modal, Steps } from 'antd';
 
 const FormItem = Form.Item;
 const { Step } = Steps;
@@ -19,7 +19,9 @@ const UpdateForm = (props) => {
     onSubmit: handleUpdate,
     onCancel: handleUpdateModalVisible,
     updateModalVisible,
+    queryAttrGroup,
     values,
+    productCategory
   } = props;
 
   const [formVals, setFormVals] = useState();
@@ -27,11 +29,17 @@ const UpdateForm = (props) => {
   const [form] = Form.useForm();
 
   useEffect(() => {
-    form.setFieldsValue({
-      ...values,
-    });
-    setFormVals({
-      ...values
+    let categoryPath;
+    queryAttrGroup(values.attrGroupId).then((result) => {
+      categoryPath = result.attrGroup.categoryPath;
+      form.setFieldsValue({
+        ...values,
+        categoryId: categoryPath
+      });
+      setFormVals({
+        ...values,
+        categoryId: categoryPath
+      })
     })
   }, [props.values]);
 
@@ -46,7 +54,7 @@ const UpdateForm = (props) => {
     if (currentStep < 2) {
       forward();
     } else {
-      handleUpdate({ ...formVals, ...fieldsValue });
+      handleUpdate({ ...formVals, ...fieldsValue, categoryId: fieldsValue.categoryId[fieldsValue.categoryId.length - 1] });
     }
   };
 
@@ -54,6 +62,12 @@ const UpdateForm = (props) => {
   //   setFormVals({ ...formVals, logo: endPointUrl });
   //   form.setFieldsValue({ logo: endPointUrl });
   // };
+
+  const filter = (inputValue, path) => {
+    // default fieldname of 'label' changed to 'name' here
+    // option.label.toLowerCase() => option.name.toLowerCase() 
+    return path.some(option => option.name.toLowerCase().indexOf(inputValue.toLowerCase()) > -1);
+  }
 
   const renderContent = () => {
     if (currentStep === 1) {
@@ -69,8 +83,13 @@ const UpdateForm = (props) => {
           <FormItem name="sort" label="Sort">
             <Input placeholder="Sort" />
           </FormItem>
-          <FormItem name="catelogId" label="Category ID">
-            <Input placeholder="Category ID" />
+          <FormItem name="categoryId" label="Category ID">
+            <Cascader
+              placeholder="Please select"
+              options={productCategory.data}
+              fieldNames={{ label: 'name', value: 'catId', children: 'children' }}
+              showSearch={{ filter }}
+            />
           </FormItem>
         </>
       );

@@ -24,7 +24,7 @@ const CategoryTree = (props) => {
 
     // Tree related function
     const onExpand = (expandedKeys) => {
-        console.log('onExpand', expandedKeys);
+        // console.log('onExpand', expandedKeys);
         // if not set autoExpandParent to false, if children expanded, parent can not collapse.
         // or, you can remove all expanded children keys.
         setTreeExpandedKeys(expandedKeys);
@@ -37,11 +37,11 @@ const CategoryTree = (props) => {
         const nodeLevel = (info.node.pos.split('-')).length - 1;
         setTreeSelectedKeys(selectedKeys);
 
-        if (nodeLevel == 3) {
+        if (info.selected && nodeLevel === 3) {
             dispatch({
                 type: 'attrGroup/query',
                 payload: {
-                    catelogId: selectedKeys
+                    categoryId: selectedKeys
                 }
             })
         } else {

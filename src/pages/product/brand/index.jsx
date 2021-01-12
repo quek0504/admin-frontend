@@ -43,7 +43,7 @@ const handleUpdate = async (fields) => {
     return true;
   } catch (error) {
     hide();
-    message.error('Something went wrong, pleease try again!');
+    message.error('Something went wrong, please try again!');
     return false;
   }
 };
@@ -65,7 +65,7 @@ const handleRemove = async (selectedRows) => {
     return true;
   } catch (error) {
     hide();
-    message.error('Something went wrong, pleease try again!');
+    message.error('Something went wrong, please try again!');
     return false;
   }
 };

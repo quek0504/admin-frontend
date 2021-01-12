@@ -7,7 +7,7 @@ import Media from 'react-media';
 import { connect } from 'umi';
 import CreateForm from './CreateForm';
 import UpdateForm from './UpdateForm';
-import { queryAttrGroup, addAttrGroup, removeAttrGroup, updateAttrGroup } from '../service';
+import { queryAttrGroupInfo, addAttrGroup, removeAttrGroup, updateAttrGroup } from '../service';
 
 /**
  * 添加节点
@@ -43,7 +43,7 @@ const handleUpdate = async (fields) => {
         return true;
     } catch (error) {
         hide();
-        message.error('Something went wrong, pleease try again!');
+        message.error('Something went wrong, please try again!');
         return false;
     }
 };
@@ -65,7 +65,16 @@ const handleRemove = async (selectedRows) => {
         return true;
     } catch (error) {
         hide();
-        message.error('Something went wrong, pleease try again!');
+        message.error('Something went wrong, please try again!');
+        return false;
+    }
+};
+
+const queryAttrGroup = async (attrGroupId) => {
+    try {
+        return await queryAttrGroupInfo(attrGroupId);;
+    } catch (error) {
+        message.error('Something went wrong, please try again!');
         return false;
     }
 };
@@ -74,6 +83,7 @@ const GroupTable = (props) => {
     const {
         dispatch,
         attrGroup, // data from model
+        productCategory, // data from model
         loading
     } = props;
 
@@ -128,7 +138,7 @@ const GroupTable = (props) => {
         },
         {
             title: 'Category ID',
-            dataIndex: 'catelogId',
+            dataIndex: 'categoryId',
         },
         {
             title: 'Action',
@@ -227,7 +237,8 @@ const GroupTable = (props) => {
                         handleModalVisible(false);
 
                         dispatch({
-                            type: 'attrGroup/query'
+                            type: 'attrGroup/query',
+                            payload: value
                         })
 
                         if (actionRef.current) {
@@ -239,6 +250,7 @@ const GroupTable = (props) => {
                     handleModalVisible(false)
                 }}
                 modalVisible={createModalVisible}
+                productCategory={productCategory}
             />
             {stepFormValues && Object.keys(stepFormValues).length ? (
                 <UpdateForm
@@ -250,7 +262,8 @@ const GroupTable = (props) => {
                             setStepFormValues({});
 
                             dispatch({
-                                type: 'productBrand/query'
+                                type: 'attrGroup/query',
+                                payload: value
                             })
 
                             if (actionRef.current) {
@@ -263,13 +276,16 @@ const GroupTable = (props) => {
                         setStepFormValues({});
                     }}
                     updateModalVisible={updateModalVisible}
+                    queryAttrGroup={queryAttrGroup}
                     values={stepFormValues}
+                    productCategory={productCategory}
                 />
             ) : null}
         </div>
     );
 };
-export default connect(({ attrGroup, loading }) => ({
+export default connect(({ productCategory, attrGroup, loading }) => ({
+    productCategory,
     attrGroup,
     loading: loading.models.attrGroup
 }))(GroupTable);

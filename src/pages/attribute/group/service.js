@@ -5,9 +5,13 @@ export async function fetchAttrGroup() {
 }
 
 export async function queryAttrGroup(params) {
-    return request(`/api/product/attrgroup/list/${params.catelogId}`, {
+    return request(`/api/product/attrgroup/list/${params.categoryId}`, {
         params
     });
+}
+
+export async function queryAttrGroupInfo(attrGroupId) {
+    return request(`/api/product/attrgroup/info/${attrGroupId}`);
 }
 
 export async function removeAttrGroup(params) {
