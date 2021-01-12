@@ -41,7 +41,7 @@ const UpdateForm = (props) => {
         categoryId: categoryPath
       })
     })
-  }, [props.values]);
+  }, []);
 
   const forward = () => setCurrentStep(currentStep + 1);
 
@@ -54,7 +54,7 @@ const UpdateForm = (props) => {
     if (currentStep < 2) {
       forward();
     } else {
-      handleUpdate({ ...formVals, ...fieldsValue, categoryId: fieldsValue.categoryId[fieldsValue.categoryId.length - 1] });
+      handleUpdate({ ...formVals, ...fieldsValue});
     }
   };
 

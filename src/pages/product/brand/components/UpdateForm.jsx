@@ -35,7 +35,7 @@ const UpdateForm = (props) => {
     setFormVals({
       ...values
     })
-  }, [props.values]);
+  }, []);
 
   const forward = () => setCurrentStep(currentStep + 1);
 

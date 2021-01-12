@@ -30,11 +30,6 @@ const CreateForm = (props) => {
 
   // Triggered after submitting the form and verifying data successfully
   const handleFinish = (formValues) => {
-    formValues = {
-      ...formValues,
-      // cascader field is an array [level1,level2..], only last level categoryId will be sent
-      categoryId: formValues.categoryId[formValues.categoryId.length - 1]
-    }
     onSubmit(formValues); // props function
   };
 

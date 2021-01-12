@@ -1,6 +1,6 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Divider, Image, message } from 'antd';
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { FooterToolbar } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import Media from 'react-media';
@@ -8,6 +8,7 @@ import { connect } from 'umi';
 import CreateForm from './CreateForm';
 import UpdateForm from './UpdateForm';
 import { queryAttrGroupInfo, addAttrGroup, removeAttrGroup, updateAttrGroup } from '../service';
+import { TreeContext } from '../index';
 
 /**
  * 添加节点
@@ -86,6 +87,11 @@ const GroupTable = (props) => {
         productCategory, // data from model
         loading
     } = props;
+
+    const { expand, select } = useContext(TreeContext);
+
+    const [treeExpandedKeys, setTreeExpandedKeys] = expand;
+    const [treeSelectedKeys, setTreeSelectedKeys] = select;
 
     const [createModalVisible, handleModalVisible] = useState(false);
     const [updateModalVisible, handleUpdateModalVisible] = useState(false);
@@ -231,15 +237,26 @@ const GroupTable = (props) => {
             )}
             <CreateForm
                 onSubmit={async (value) => {
-                    const success = await handleAdd(value);
+                    let toSubmit = {
+                        ...value,
+                        categoryId: value.categoryId[value.categoryId.length - 1]
+                    }
+                    const success = await handleAdd(toSubmit);
 
                     if (success) {
                         handleModalVisible(false);
 
                         dispatch({
                             type: 'attrGroup/query',
-                            payload: value
+                            payload: toSubmit
                         })
+
+                        // keys need to be a string array
+                        setTreeExpandedKeys(value.categoryId.map(String)); // convert int array to string array
+
+                        let toSelect = [];
+                        toSelect.push((value.categoryId[value.categoryId.length - 1]).toString());
+                        setTreeSelectedKeys(toSelect);
 
                         if (actionRef.current) {
                             actionRef.current.reload();
@@ -255,7 +272,11 @@ const GroupTable = (props) => {
             {stepFormValues && Object.keys(stepFormValues).length ? (
                 <UpdateForm
                     onSubmit={async (value) => {
-                        const success = await handleUpdate(value);
+                        let toSubmit = {
+                            ...value,
+                            categoryId: value.categoryId[value.categoryId.length - 1]
+                        }
+                        const success = await handleUpdate(toSubmit);
 
                         if (success) {
                             handleUpdateModalVisible(false);
@@ -263,8 +284,15 @@ const GroupTable = (props) => {
 
                             dispatch({
                                 type: 'attrGroup/query',
-                                payload: value
+                                payload: toSubmit
                             })
+
+                            // keys need to be a string array
+                            setTreeExpandedKeys(value.categoryId.map(String)); // convert int array to string array
+
+                            let toSelect = [];
+                            toSelect.push((value.categoryId[value.categoryId.length - 1]).toString());
+                            setTreeSelectedKeys(toSelect);
 
                             if (actionRef.current) {
                                 actionRef.current.reload();

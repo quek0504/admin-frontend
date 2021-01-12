@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Space, Tooltip, Button, Spin, Tree } from 'antd';
 import { connect } from 'umi';
+import { TreeContext } from '../index';
 
 const { TreeNode } = Tree;
 
@@ -11,16 +12,24 @@ const CategoryTree = (props) => {
         loading,
     } = props;
 
+    const { expand, select } = useContext(TreeContext);
+
     // Tree related state
-    const [treeExpandedKeys, setTreeExpandedKeys] = useState([]);
-    const [treeSelectedKeys, setTreeSelectedKeys] = useState([]);
+    const [treeExpandedKeys, setTreeExpandedKeys] = expand;
+    const [treeSelectedKeys, setTreeSelectedKeys] = select;
     const [autoExpandParent, setAutoExpandParent] = useState(true);
 
     useEffect(() => {
         dispatch({
             type: 'productCategory/fetch',
         });
-    }, [1]);
+
+        return () => {
+            dispatch({
+                type: 'attrGroup/clear',
+            })
+        }
+    }, []);
 
     // Tree related function
     const onExpand = (expandedKeys) => {
