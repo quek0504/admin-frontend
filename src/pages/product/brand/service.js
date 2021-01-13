@@ -51,3 +51,21 @@ export async function uploadLogo(params) {
       return error;
     });
 }
+
+export async function queryCategoryBrandRelation(params) {
+  return request(`/api/product/categorybrandrelation/category/list?brandId=${params}`);
+}
+
+export async function saveCategoryBrandRelation(params) {
+  return request('/api/product/categorybrandrelation/save', {
+    method: 'POST',
+    data: params,
+  });
+}
+
+export async function deleteCategoryBrandRelation(params) {
+  return request('/api/product/categorybrandrelation/delete', {
+    method: 'POST',
+    data: params,
+  });
+}

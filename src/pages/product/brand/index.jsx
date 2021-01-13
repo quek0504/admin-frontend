@@ -8,6 +8,7 @@ import Media from 'react-media';
 import { connect } from 'umi';
 import CreateForm from './components/CreateForm';
 import UpdateForm from './components/UpdateForm';
+import CategoryRelationModal from './components/CategoryRelationModal';
 import { addBrand, removeBrand, updateBrand } from './service';
 /**
  * 添加节点
@@ -79,6 +80,8 @@ const ProductBrand = (props) => {
 
   const [createModalVisible, handleModalVisible] = useState(false);
   const [updateModalVisible, handleUpdateModalVisible] = useState(false);
+  const [categoryRelationModalVisible, handleRelationModalVisible] = useState(false);
+  const [selectedBrandId, setSelectedBrandId] = useState();
   const [stepFormValues, setStepFormValues] = useState({});
   const actionRef = useRef();
   const [row, setRow] = useState();
@@ -151,6 +154,15 @@ const ProductBrand = (props) => {
       hideOnSmall: true,
       render: (_, record) => (
         <>
+          <a
+            onClick={() => {
+              handleRelationModalVisible(true);
+              setSelectedBrandId(record.brandId);
+            }}
+          >
+            Category Relation
+          </a>
+          <Divider type="vertical" />
           <a
             onClick={() => {
               handleUpdateModalVisible(true);
@@ -279,6 +291,17 @@ const ProductBrand = (props) => {
           values={stepFormValues}
         />
       ) : null}
+
+      {selectedBrandId ? (
+        <CategoryRelationModal
+          onCloseModal={() => {
+            handleRelationModalVisible(false)
+          }}
+          modalVisible={categoryRelationModalVisible}
+          selectedBrandId={selectedBrandId}
+        />)
+        :
+        null}
 
       <Drawer
         width={600}

@@ -1,13 +1,17 @@
 import {
     queryBrand,
     getPreSignedData,
-    uploadLogo
+    uploadLogo,
+    queryCategoryBrandRelation,
+    saveCategoryBrandRelation,
+    deleteCategoryBrandRelation
 } from './service';
 
 const Model = {
     namespace: 'productBrand',
     state: {
         data: [],
+        relation: []
     },
     effects: {
         *fetch({ payload }, { call, put }) {
@@ -16,6 +20,21 @@ const Model = {
                 type: 'queryProductBrand',
                 payload: response.page.list,
             });
+        },
+        *fetchRelation({ payload }, { call, put }) {
+            const response = yield call(queryCategoryBrandRelation, payload);
+            yield put({
+                type: 'queryRelation',
+                payload: response.data,
+            });
+        },
+        *saveRelation({ payload }, { call }) {
+            const response = yield call(saveCategoryBrandRelation, payload);
+            return response;
+        },
+        *deleteRelation({ payload }, { call }) {
+            const response = yield call(deleteCategoryBrandRelation, payload);
+            return response;
         },
         *getPreSigned({ payload }, { call }) {
             const response = yield call(getPreSignedData, payload);
@@ -30,6 +49,9 @@ const Model = {
         // reducer naming match 'type'
         queryProductBrand(state, action) {
             return { ...state, data: action.payload };
+        },
+        queryRelation(state, action) {
+            return { ...state, relation: action.payload };
         },
     },
 };
