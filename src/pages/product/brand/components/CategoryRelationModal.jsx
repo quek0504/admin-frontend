@@ -20,7 +20,7 @@ const CategoryRelationModal = (props) => {
       type: 'productBrand/fetchRelation',
       payload: selectedBrandId
     });
-  }, [selectedBrandId]);
+  }, []);
 
   const [showRelation, setShowRelation] = useState(true);
   const [cateogryPath, setCategoryPath] = useState([]);

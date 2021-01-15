@@ -296,6 +296,7 @@ const ProductBrand = (props) => {
         <CategoryRelationModal
           onCloseModal={() => {
             handleRelationModalVisible(false)
+            setSelectedBrandId();
           }}
           modalVisible={categoryRelationModalVisible}
           selectedBrandId={selectedBrandId}

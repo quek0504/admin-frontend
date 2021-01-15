@@ -1,29 +1,25 @@
 import {
     fetchAttrGroup,
     queryAttrGroup,
+    queryAttrRelation,
 } from './service';
 
 const Model = {
     namespace: 'attrGroup',
     state: {
-        data: []
+        data: [],
+        relation: [],
     },
     effects: {
         *fetch({ payload }, { call, put }) {
             const response = yield call(fetchAttrGroup, payload);
-            console.log("printing response");
-            console.log(response);
             yield put({
                 type: 'getAttrGroup',
                 payload: response.page.list,
             });
         },
         *query({ payload }, { call, put }) {
-            console.log("printing payload");
-            console.log(payload);
             const response = yield call(queryAttrGroup, payload);
-            console.log("printing response");
-            console.log(response);
             yield put({
                 type: 'getAttrGroup',
                 payload: response.page.list,
@@ -34,6 +30,13 @@ const Model = {
                 type: 'clearAttrGroup'
             });
         },
+        *fetchRelation({ payload }, { call, put }) {
+            const response = yield call(queryAttrRelation, payload);
+            yield put({
+                type: 'queryRelation',
+                payload: response.data,
+            });
+        },
     },
     reducers: {
         // reducer naming match 'type'
@@ -42,7 +45,10 @@ const Model = {
         },
         clearAttrGroup(state) {
             return { ...state, data: []};
-        }
+        },
+        queryRelation(state, action) {
+            return { ...state, relation: action.payload };
+        },
     },
 };
 export default Model;

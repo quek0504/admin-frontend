@@ -1,12 +1,13 @@
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Divider, Image, message } from 'antd';
-import React, { useState, useRef, useEffect, useContext } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import { FooterToolbar } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import Media from 'react-media';
 import { connect } from 'umi';
 import CreateForm from './CreateForm';
 import UpdateForm from './UpdateForm';
+import AttributeRelationModal from './AttributeRelationModal';
 import { queryAttrGroupInfo, addAttrGroup, removeAttrGroup, updateAttrGroup } from '../service';
 import { TreeContext } from '../index';
 
@@ -95,6 +96,8 @@ const GroupTable = (props) => {
 
     const [createModalVisible, handleModalVisible] = useState(false);
     const [updateModalVisible, handleUpdateModalVisible] = useState(false);
+    const [attributeRelationModalVisible, handleRelationModalVisible] = useState(false);
+    const [selectedAttributeGroupId, setSelectedAttributeGroupId] = useState();
     const [stepFormValues, setStepFormValues] = useState({});
     const actionRef = useRef();
     const [row, setRow] = useState();
@@ -124,7 +127,6 @@ const GroupTable = (props) => {
         {
             title: 'Icon',
             dataIndex: 'icon',
-            hideInSearch: true,
             hideOnSmall: true,
             render: (_, entity) => {
                 if (entity.logo) {
@@ -155,12 +157,21 @@ const GroupTable = (props) => {
                 <>
                     <a
                         onClick={() => {
+                            handleRelationModalVisible(true);
+                            setSelectedAttributeGroupId(record.attrGroupId);
+                        }}
+                    >
+                        Attribute Relation
+                    </a>
+                    <Divider type="vertical" />
+                    <a
+                        onClick={() => {
                             handleUpdateModalVisible(true);
                             setStepFormValues(record);
                         }}
                     >
                         Edit
-            </a>
+                    </a>
                     <Divider type="vertical" />
                     <a href="">Delete</a>
                 </>
@@ -171,14 +182,6 @@ const GroupTable = (props) => {
     const getResponsiveColumns = (smallScreen) =>
         columns.filter(({ hideOnSmall = false }) => !(smallScreen && hideOnSmall));
 
-    useEffect(() => {
-        // fetch all attribute groups, no path variable
-        // for testing only
-        // dispatch({
-        //     type: 'attrGroup/fetch',
-        // });
-    }, [1]);
-
     return (
         <div>
             <Media query="(max-width: 992px)">
@@ -188,9 +191,6 @@ const GroupTable = (props) => {
                             headerTitle="Attribute Group Management"
                             actionRef={actionRef}
                             rowKey="attrGroupId"
-                            search={{
-                                labelWidth: 120,
-                            }}
                             toolBarRender={() => [
                                 <Button type="primary" onClick={() => handleModalVisible(true)}>
                                     <PlusOutlined /> New Group
@@ -201,6 +201,30 @@ const GroupTable = (props) => {
                             dataSource={attrGroup.data}
                             rowSelection={{
                                 onChange: (_, selectedRows) => setSelectedRows(selectedRows),
+                            }}
+                            search={false}
+                            options={{
+                                search: true,
+                            }}
+                            request={(params) => {
+                                let keyword = params.keyword === undefined ? undefined : params.keyword.trim();
+                                // no category selected and empty search bar
+                                if (treeSelectedKeys.length === 0 && keyword === "") {
+                                    // fetch all attribute groups, no path variable
+                                    dispatch({
+                                        type: 'attrGroup/fetch',
+                                    });;
+                                } 
+                                // non empty search bar
+                                else if (keyword) {
+                                    dispatch({
+                                        type: 'attrGroup/query',
+                                        payload: {
+                                            categoryId: treeSelectedKeys.length === 0 ? 0 : treeSelectedKeys, // categoryId
+                                            key: keyword,
+                                        },
+                                    })
+                                }
                             }}
                         />
                     )
@@ -307,6 +331,16 @@ const GroupTable = (props) => {
                     queryAttrGroup={queryAttrGroup}
                     values={stepFormValues}
                     productCategory={productCategory}
+                />
+            ) : null}
+            {selectedAttributeGroupId ? (
+                <AttributeRelationModal
+                    onCloseModal={() => {
+                        handleRelationModalVisible(false);
+                        setSelectedAttributeGroupId();
+                    }}
+                    modalVisible={attributeRelationModalVisible}
+                    selectedAttributeGroupId={selectedAttributeGroupId}
                 />
             ) : null}
         </div>

@@ -34,3 +34,14 @@ export async function updateAttrGroup(params) {
         data: params,
     });
 }
+
+export async function queryAttrRelation(attrGroupId) {
+    return request(`/api/product/attrgroup/${attrGroupId}/attr/relation`);
+}
+
+export async function deleteAttrRelation(params) {
+    return request('api/product/attrgroup/attr/relation/delete', {
+        method: 'POST',
+        data: params,
+    });
+}
