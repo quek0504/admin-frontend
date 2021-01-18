@@ -35,7 +35,7 @@ const CategoryTree = (props) => {
         setTreeSelectedKeys(selectedKeys);
 
         if (info.selected && nodeLevel === 3) {
-            getTable(selectedKeys,"");
+            getTable(selectedKeys, "");
         } else {
             clearTable();
         }

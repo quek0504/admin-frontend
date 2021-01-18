@@ -7,11 +7,11 @@ import GroupTable from './components/GroupTable';
 
 export const TreeContext = React.createContext({});
 
-export const Attribute = (props) => {
+export const Specification = (props) => {
 
   const {
     productCategory, // from model
-    attrGroup, // from model
+    specAttribute, // from model
     loading,
     dispatch,
   } = props;
@@ -21,22 +21,20 @@ export const Attribute = (props) => {
 
   useEffect(() => {
     dispatch({
-        type: 'productCategory/fetch',
+      type: 'productCategory/fetch',
     });
 
     return () => {
-        clearTable();
+      clearTable();
     }
-}, []);
+  }, []);
 
   const getTable = (selectedKey, keyword) => {
-    // selectedKey is an array of categoryId
-    // console.log(selectedKey, keyword);
     // empty search bar
     if (keyword === "") {
       // fetch all attribute groups, no path variable
       dispatch({
-        type: 'attrGroup/query',
+        type: 'specAttribute/query',
         payload: {
           categoryId: selectedKey.length === 0 ? 0 : selectedKey, // categoryId
         }
@@ -45,7 +43,7 @@ export const Attribute = (props) => {
     // non empty search bar
     else if (keyword) {
       dispatch({
-        type: 'attrGroup/query',
+        type: 'specAttribute/query',
         payload: {
           categoryId: selectedKey.length === 0 ? 0 : selectedKey, // categoryId
           key: keyword,
@@ -56,7 +54,7 @@ export const Attribute = (props) => {
 
   const clearTable = () => {
     dispatch({
-      type: 'attrGroup/clear',
+      type: 'specAttribute/clear',
     })
   }
 
@@ -80,7 +78,7 @@ export const Attribute = (props) => {
             <Col sm={24} md={24} lg={20}>
               <GroupTable
                 productCategory={productCategory}
-                attrGroup={attrGroup}
+                specAttribute={specAttribute}
                 getTable={getTable}
               />
             </Col>
@@ -91,9 +89,8 @@ export const Attribute = (props) => {
   );
 };
 
-export default connect(({ productCategory, attrGroup, loading }) => ({
+export default connect(({ productCategory, specAttribute, loading }) => ({
   productCategory,
-  attrGroup,
+  specAttribute,
   loading: loading.models.productCategory,
-}))(Attribute);
-
+}))(Specification);

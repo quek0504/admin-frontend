@@ -2,6 +2,7 @@ import {
     fetchAttrGroup,
     queryAttrGroup,
     queryAttrRelation,
+    deleteAttrRelation,
 } from './service';
 
 const Model = {
@@ -36,6 +37,10 @@ const Model = {
                 type: 'queryRelation',
                 payload: response.data,
             });
+        },
+        *deleteRelation({ payload }, { call }) {
+            const response = yield call(deleteAttrRelation, payload);
+            return response;
         },
     },
     reducers: {

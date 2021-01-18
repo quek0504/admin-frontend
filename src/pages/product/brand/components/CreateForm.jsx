@@ -32,6 +32,7 @@ const CreateForm = (props) => {
   // Triggered after submitting the form and verifying data successfully
   const handleFinish = (formValues) => {
     onSubmit(formValues); // props function
+    form.resetFields();
   };
 
   const setLogoField = (endPointUrl) => {

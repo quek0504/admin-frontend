@@ -1,14 +1,15 @@
-import { PlusOutlined } from '@ant-design/icons';
-import { Button, Divider, Image, message } from 'antd';
+import { PlusOutlined, CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
+import { Button, Divider, message, Typography } from 'antd';
 import React, { useState, useRef, useContext } from 'react';
 import { FooterToolbar } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import Media from 'react-media';
 import CreateForm from './CreateForm';
 import UpdateForm from './UpdateForm';
-import AttributeRelationModal from './AttributeRelationModal';
-import { queryAttrGroupInfo, addAttrGroup, removeAttrGroup, updateAttrGroup } from '../service';
+import { querySpecAttr, queryAttrGroups, addSpecAttr, updateSpecAttr, removeSpecAttr } from '../service';
 import { TreeContext } from '../index';
+
+const { Text } = Typography;
 
 /**
  * 添加节点
@@ -19,7 +20,7 @@ const handleAdd = async (fields) => {
     const hide = message.loading('Creating');
 
     try {
-        await addAttrGroup({ ...fields });
+        await addSpecAttr({ ...fields });
         hide();
         message.success('Create Successful!');
         return true;
@@ -38,7 +39,7 @@ const handleUpdate = async (fields) => {
     const hide = message.loading('Updating');
 
     try {
-        await updateAttrGroup({ ...fields });
+        await updateSpecAttr({ ...fields });
         hide();
         message.success('Update Successful!');
         return true;
@@ -58,7 +59,7 @@ const handleRemove = async (selectedRows) => {
     if (!selectedRows) return true;
 
     try {
-        await removeAttrGroup({
+        await removeSpecAttr({
             key: selectedRows.map((row) => row.key),
         });
         hide();
@@ -71,19 +72,28 @@ const handleRemove = async (selectedRows) => {
     }
 };
 
-const queryAttrGroup = async (attrGroupId) => {
+const queryAttr = async (attrId) => {
     try {
-        return await queryAttrGroupInfo(attrGroupId);;
+        return await querySpecAttr(attrId);
     } catch (error) {
         message.error('Something went wrong, please try again!');
         return false;
     }
 };
 
+const queryAttrGroup = async (categoryId) => {
+    try {
+        return await queryAttrGroups(categoryId);
+    } catch (error) {
+        message.error('Something went wrong, please try again!');
+        return false;
+    }
+}
+
 const GroupTable = (props) => {
     const {
         productCategory,
-        attrGroup,
+        specAttribute,
         getTable,
     } = props;
 
@@ -94,22 +104,20 @@ const GroupTable = (props) => {
 
     const [createModalVisible, handleModalVisible] = useState(false);
     const [updateModalVisible, handleUpdateModalVisible] = useState(false);
-    const [attributeRelationModalVisible, handleRelationModalVisible] = useState(false);
-    const [selectedTableKey, setSelectedTableKey] = useState();
-    const [stepFormValues, setStepFormValues] = useState({});
+    const [formValues, setFormValues] = useState({});
     const actionRef = useRef();
     const [row, setRow] = useState();
     const [selectedRowsState, setSelectedRows] = useState([]);
     const columns = [
         {
             title: 'ID',
-            dataIndex: 'attrGroupId',
+            dataIndex: 'attrId',
             tip: 'Primary Key',
             hideInForm: true,
         },
         {
-            title: 'Attribute Group',
-            dataIndex: 'attrGroupName',
+            title: 'Attribute Name',
+            dataIndex: 'attrName',
             formItemProps: {
                 rules: [
                     {
@@ -123,28 +131,62 @@ const GroupTable = (props) => {
             },
         },
         {
-            title: 'Icon',
-            dataIndex: 'icon',
-            hideOnSmall: true,
+            title: 'Value Type',
+            dataIndex: 'valueType',
             render: (_, entity) => {
-                if (entity.logo) {
-                    return <Image src={entity.logo} height={200} width={200} />
+                if (entity.valueType === 1) {
+                    return <Text strong>Multiple Values</Text>
                 }
-                return <p>No Image</p>
+                return <Text strong>Single Value</Text>
             }
         },
         {
-            title: 'Description',
-            dataIndex: 'descript',
-            valueType: 'textarea',
+            title: 'Icon',
+            dataIndex: 'icon',
+            hideOnSmall: true,
         },
         {
-            title: 'Sort',
-            dataIndex: 'sort',
+            title: 'Selectable Values',
+            dataIndex: 'valueSelect',
+            hideOnSmall: true,
         },
         {
-            title: 'Category ID',
-            dataIndex: 'categoryId',
+            title: 'Category Name',
+            dataIndex: 'categoryName',
+        },
+        {
+            title: 'Attribute Group Name',
+            dataIndex: 'groupName',
+        },
+        {
+            title: 'Searchable',
+            dataIndex: 'searchType',
+            render: (_, entity) => {
+                if (entity.searchType === 1) {
+                    return < CheckCircleFilled />
+                }
+                return <CloseCircleFilled />
+            }
+        },
+        {
+            title: 'Show in store',
+            dataIndex: 'showDesc',
+            render: (_, entity) => {
+                if (entity.showDesc === 1) {
+                    return < CheckCircleFilled />
+                }
+                return <CloseCircleFilled />
+            }
+        },
+        {
+            title: 'Enable',
+            dataIndex: 'enable',
+            render: (_, entity) => {
+                if (entity.enable === 1) {
+                    return < CheckCircleFilled />
+                }
+                return <CloseCircleFilled />
+            }
         },
         {
             title: 'Action',
@@ -155,17 +197,12 @@ const GroupTable = (props) => {
                 <>
                     <a
                         onClick={() => {
-                            handleRelationModalVisible(true);
-                            setSelectedTableKey(record.attrGroupId);
-                        }}
-                    >
-                        Attribute Relation
-                    </a>
-                    <Divider type="vertical" />
-                    <a
-                        onClick={() => {
                             handleUpdateModalVisible(true);
-                            setStepFormValues(record);
+                            queryAttr(record.attrId).then((result) => {
+                                if (result.msg === "success") {
+                                    setFormValues(result.attr);
+                                }
+                            })
                         }}
                     >
                         Edit
@@ -186,17 +223,17 @@ const GroupTable = (props) => {
                 {smallScreen => {
                     return (
                         <ProTable
-                            headerTitle="Attribute Group Management"
+                            headerTitle="Specification Management"
                             actionRef={actionRef}
-                            rowKey="attrGroupId"
+                            rowKey="attrId"
                             toolBarRender={() => [
                                 <Button type="primary" onClick={() => handleModalVisible(true)}>
-                                    <PlusOutlined /> New Group
+                                    <PlusOutlined /> New Specification
                                 </Button>,
                             ]}
                             // request={(params, sorter, filter) => queryRule({ ...params, sorter, filter })}
                             columns={getResponsiveColumns(smallScreen)}
-                            dataSource={attrGroup.data}
+                            dataSource={specAttribute.data}
                             rowSelection={{
                                 onChange: (_, selectedRows) => setSelectedRows(selectedRows),
                             }}
@@ -238,14 +275,18 @@ const GroupTable = (props) => {
                     >
                         Batch Delete
                     </Button>
-                    <Button type="primary">Batch Update</Button>
                 </FooterToolbar>
             )}
             <CreateForm
                 onSubmit={async (value) => {
                     let toSubmit = {
                         ...value,
-                        categoryId: value.categoryId[value.categoryId.length - 1]
+                        categoryId: value.categoryId[value.categoryId.length - 1],
+                        valueSelect: value.valueSelect === undefined || value.valueSelect === null ? null : value.valueSelect.toString(),
+                        valueType: value.valueType === false ? 0 : 1,
+                        searchType: value.searchType === false ? 0 : 1,
+                        showDesc: value.showDesc === false ? 0 : 1,
+                        enable: value.enable === false ? 0 : 1,
                     }
                     const success = await handleAdd(toSubmit);
 
@@ -274,19 +315,25 @@ const GroupTable = (props) => {
                 }}
                 modalVisible={createModalVisible}
                 productCategory={productCategory}
+                queryAttrGroup={queryAttrGroup}
             />
-            {stepFormValues && Object.keys(stepFormValues).length ? (
+            {formValues && Object.keys(formValues).length ? (
                 <UpdateForm
                     onSubmit={async (value) => {
                         let toSubmit = {
                             ...value,
-                            categoryId: value.categoryId[value.categoryId.length - 1]
+                            categoryId: value.categoryId[value.categoryId.length - 1],
+                            valueSelect: value.valueSelect === undefined || value.valueSelect === null ? null : value.valueSelect.toString(),
+                            valueType: value.valueType === false ? 0 : 1,
+                            searchType: value.searchType === false ? 0 : 1,
+                            showDesc: value.showDesc === false ? 0 : 1,
+                            enable: value.enable === false ? 0 : 1,
                         }
                         const success = await handleUpdate(toSubmit);
 
                         if (success) {
                             handleUpdateModalVisible(false);
-                            setStepFormValues({});
+                            setFormValues({});
 
                             // keys need to be a string array
                             setTreeExpandedKeys(value.categoryId.map(String)); // convert int array to string array
@@ -305,22 +352,12 @@ const GroupTable = (props) => {
                     }}
                     onCancel={() => {
                         handleUpdateModalVisible(false);
-                        setStepFormValues({});
+                        setFormValues({});
                     }}
                     updateModalVisible={updateModalVisible}
-                    queryAttrGroup={queryAttrGroup}
-                    values={stepFormValues}
                     productCategory={productCategory}
-                />
-            ) : null}
-            {selectedTableKey ? (
-                <AttributeRelationModal
-                    onCloseModal={() => {
-                        handleRelationModalVisible(false);
-                        setSelectedTableKey();
-                    }}
-                    modalVisible={attributeRelationModalVisible}
-                    setSelectedTableKey={setSelectedTableKey}
+                    queryAttrGroup={queryAttrGroup}
+                    values={formValues}
                 />
             ) : null}
         </div>

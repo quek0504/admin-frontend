@@ -31,11 +31,8 @@ const CreateForm = (props) => {
   // Triggered after submitting the form and verifying data successfully
   const handleFinish = (formValues) => {
     onSubmit(formValues); // props function
+    form.resetFields();
   };
-
-  // const setLogoField = (endPointUrl) => {
-  //   form.setFieldsValue({ logo: endPointUrl });
-  // };
 
   const filter = (inputValue, path) => {
     // default fieldname of 'label' changed to 'name' here
@@ -71,16 +68,6 @@ const CreateForm = (props) => {
         >
           <TextArea rows={4} placeholder="Description (at least 5 words)" />
         </FormItem>
-        {/* <FormItem name="logo" label="Logo"
-          rules={[
-            {
-              required: true,
-              message: 'Logo must not be empty!'
-            },
-          ]}
-        >
-          <UploadForm setLogoField={setLogoField}></UploadForm>
-        </FormItem> */}
         <FormItem
           name="sort"
           label="Sort"
