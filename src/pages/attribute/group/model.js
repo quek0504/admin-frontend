@@ -2,7 +2,9 @@ import {
     fetchAttrGroup,
     queryAttrGroup,
     queryAttrRelation,
+    saveAttrRelation,
     deleteAttrRelation,
+    queryNonAttrRelation
 } from './service';
 
 const Model = {
@@ -10,6 +12,7 @@ const Model = {
     state: {
         data: [],
         relation: [],
+        nonRelation: [],
     },
     effects: {
         *fetch({ payload }, { call, put }) {
@@ -38,9 +41,20 @@ const Model = {
                 payload: response.data,
             });
         },
+        *saveRelation({ payload }, { call }) {
+            const response = yield call(saveAttrRelation, payload);
+            return response;
+        },
         *deleteRelation({ payload }, { call }) {
             const response = yield call(deleteAttrRelation, payload);
             return response;
+        },
+        *fetchNonRelation({ payload }, { call, put }) {
+            const response = yield call(queryNonAttrRelation, payload);
+            yield put({
+                type: 'queryNonRelation',
+                payload: response.page.list,
+            });
         },
     },
     reducers: {
@@ -49,10 +63,13 @@ const Model = {
             return { ...state, data: action.payload };
         },
         clearAttrGroup(state) {
-            return { ...state, data: []};
+            return { ...state, data: [] };
         },
         queryRelation(state, action) {
             return { ...state, relation: action.payload };
+        },
+        queryNonRelation(state, action) {
+            return { ...state, nonRelation: action.payload };
         },
     },
 };

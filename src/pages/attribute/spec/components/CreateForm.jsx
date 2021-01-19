@@ -138,15 +138,10 @@ const CreateForm = (props) => {
         <FormItem
           name="attrGroupId"
           label="Attribute Group"
-          rules={[
-            {
-              required: true,
-              message: 'Attribute group must be selected',
-            },
-          ]}
         >
           <Select
             placeholder="Select attribute group"
+            allowClear
           >
             {
               attrGroups.map((attrGroup, i) => {

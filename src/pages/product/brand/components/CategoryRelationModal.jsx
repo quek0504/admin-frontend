@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { connect } from 'umi';
-import { message, Table, Button, Cascader, Space, Modal } from 'antd';
+import { message, Button, Cascader, Space, Modal } from 'antd';
+import ProTable from '@ant-design/pro-table';
 
 const CategoryRelationModal = (props) => {
   const {
@@ -59,7 +60,7 @@ const CategoryRelationModal = (props) => {
       type: 'productBrand/deleteRelation',
       payload: [relationId]
     }).then((response) => {
-      if(response.code === 0) {
+      if (response.msg === "success") {
         message.success('Category removed from brand!');
         dispatch({
           type: 'productBrand/fetchRelation',
@@ -128,7 +129,13 @@ const CategoryRelationModal = (props) => {
 
         {
           showRelation ?
-            <Table columns={columns} dataSource={productBrand.relation} />
+            <ProTable
+              headerTitle="Category"
+              rowKey="id"
+              search={false}
+              columns={columns}
+              dataSource={productBrand.relation}
+            />
             :
             <Cascader
               placeholder="Please select"
@@ -151,6 +158,7 @@ const CategoryRelationModal = (props) => {
       visible={modalVisible}
       onCancel={onCloseModal}
       onOk={() => onSubmit(showRelation)}
+      width={640}
     >
       {renderContent(showRelation)}
     </Modal>

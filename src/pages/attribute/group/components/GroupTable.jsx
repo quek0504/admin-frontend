@@ -320,7 +320,7 @@ const GroupTable = (props) => {
                         setSelectedTableKey();
                     }}
                     modalVisible={attributeRelationModalVisible}
-                    setSelectedTableKey={setSelectedTableKey}
+                    selectedTableKey={selectedTableKey}
                 />
             ) : null}
         </div>

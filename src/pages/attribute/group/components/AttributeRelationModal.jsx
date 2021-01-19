@@ -1,38 +1,71 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { connect } from 'umi';
-import { message, Table, Button, Space, Modal } from 'antd';
+import { message, Button, Space, Modal } from 'antd';
+import ProTable from '@ant-design/pro-table';
 
 const AttributeRelationModal = (props) => {
     const {
         dispatch,
         onCloseModal,
         modalVisible,
-        selectedAttributeGroupId,
+        selectedTableKey, // attrGroupId
         attrGroup, // from modal
     } = props;
 
-    useEffect(() => {
+    const fetchRelationTable = () => {
         dispatch({
             type: 'attrGroup/fetchRelation',
-            payload: selectedAttributeGroupId
+            payload: selectedTableKey
         });
-    }, []);
+    }
 
+    const fetchNonRelationTable = (attrGroupId, keyword) => {
+        // empty search bar
+        if (keyword === "") {
+            dispatch({
+                type: 'attrGroup/fetchNonRelation',
+                payload: {
+                    attrGroupId
+                }
+            });;
+        }
+        // non empty search bar
+        else if (keyword) {
+            dispatch({
+                type: 'attrGroup/fetchNonRelation',
+                payload: {
+                    attrGroupId,
+                    key: keyword,
+                },
+            })
+        }
+    }
+
+    useEffect(() => {
+        fetchRelationTable();
+        fetchNonRelationTable(selectedTableKey, "");
+    }, [selectedTableKey]);
+
+    // non assigned specification table state
+    const [selectedToAdd, setSelectedToAdd] = useState([]);
+    const actionRef = useRef();
+
+    // modal content state
     const [showRelation, setShowRelation] = useState(true);
 
-    const columns = [
+    const relationColumns = [
         {
-            title: 'ID',
-            dataIndex: 'id',
+            title: 'Attribute ID',
+            dataIndex: 'attrId',
             tip: 'Primary Key',
         },
         {
-            title: 'Attribute ID',
-            dataIndex: 'attr_id',
+            title: 'Specification Name',
+            dataIndex: 'attrName',
         },
         {
-            title: 'Attribute Group ID',
-            dataIndex: 'attr_group_id',
+            title: 'Selectable Values',
+            dataIndex: 'valueSelect',
         },
         {
             title: 'Action',
@@ -48,20 +81,38 @@ const AttributeRelationModal = (props) => {
         },
     ];
 
+    const nonRelationColumns = [
+        {
+            title: 'Attribute ID',
+            dataIndex: 'attrId',
+            tip: 'Primary Key',
+        },
+        {
+            title: 'Specification Name',
+            dataIndex: 'attrName',
+        },
+        {
+            title: 'Icon',
+            dataIndex: 'icon',
+        },
+        {
+            title: 'Selectable Values',
+            dataIndex: 'valueSelect',
+        },
+    ];
+
     const deleteRelation = (relation) => {
         dispatch({
             type: 'attrGroup/deleteRelation',
             payload: [{
-                attrId: relation.attr_id,
-                attrGroupId: relation.attr_group_id
+                attrId: relation.attrId,
+                attrGroupId: selectedTableKey
             }]
         }).then((response) => {
-            if (response.code === 0) {
+            if (response.msg === "success") {
                 message.success('Attribute removed from group!');
-                dispatch({
-                    type: 'attrGroup/fetchRelation',
-                    payload: selectedAttributeGroupId
-                })
+                fetchRelationTable();
+                fetchNonRelationTable(selectedTableKey, "");
             } else {
                 message.error('Something went wrong, please try again later!');
             }
@@ -69,9 +120,42 @@ const AttributeRelationModal = (props) => {
     }
 
     const onSubmit = (showRelation) => {
-        // table view
+        // assgined relation view
         if (showRelation) {
             onCloseModal(); // call close modal
+        }
+        // adding relation view
+        else {
+            if (selectedToAdd.length === 0) {
+                message.error('No specifications selected!');
+            } else {
+                let toSubmit = [];
+                selectedToAdd.map((item) => {
+                    toSubmit.push({
+                        attrId: item.attrId,
+                        attrGroupId: selectedTableKey
+                    })
+                });
+                dispatch({
+                    type: 'attrGroup/saveRelation',
+                    payload: toSubmit
+                }).then((response) => {
+                    if (response.msg === "success") {
+                        message.success('Specifications added!');
+
+                        // fetch new data
+                        fetchRelationTable();
+                        fetchNonRelationTable(selectedTableKey, "");
+
+                        // reset modal state
+                        setSelectedToAdd([]);
+                        actionRef.current.clearSelected();
+                        setShowRelation(!showRelation); // toggle to assgined specification table view
+                    } else {
+                        message.error('Something went wrong, please try again later!');
+                    }
+                })
+            }
         }
     }
 
@@ -89,9 +173,32 @@ const AttributeRelationModal = (props) => {
 
                 {
                     showRelation ?
-                        <Table columns={columns} dataSource={attrGroup.relation} />
+                        <ProTable
+                            headerTitle="Specification"
+                            rowKey="attrId"
+                            dataSource={attrGroup.relation}
+                            search={false}
+                            columns={relationColumns}
+                        />
                         :
-                        null
+                        <ProTable
+                            headerTitle="Add Specification"
+                            rowKey="attrId"
+                            dataSource={attrGroup.nonRelation}
+                            rowSelection={{
+                                onChange: (_, selectedRows) => { setSelectedToAdd(selectedRows) },
+                            }}
+                            actionRef={actionRef}
+                            search={false}
+                            options={{
+                                search: true,
+                            }}
+                            request={(params) => {
+                                let keyword = params.keyword === undefined ? undefined : params.keyword.trim();
+                                fetchNonRelationTable(selectedTableKey, keyword);
+                            }}
+                            columns={nonRelationColumns}
+                        />
                 }
             </Space>
         );
@@ -104,6 +211,7 @@ const AttributeRelationModal = (props) => {
             visible={modalVisible}
             onCancel={onCloseModal}
             onOk={() => onSubmit(showRelation)}
+            width={640}
         >
             {renderContent(showRelation)}
         </Modal>

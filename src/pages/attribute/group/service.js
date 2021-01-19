@@ -39,9 +39,22 @@ export async function queryAttrRelation(attrGroupId) {
     return request(`/api/product/attrgroup/${attrGroupId}/attr/relation`);
 }
 
-export async function deleteAttrRelation(params) {
-    return request('api/product/attrgroup/attr/relation/delete', {
+export async function saveAttrRelation(params) {
+    return request('/api/product/attrgroup/attr/relation', {
         method: 'POST',
         data: params,
+    });
+}
+
+export async function deleteAttrRelation(params) {
+    return request('/api/product/attrgroup/attr/relation/delete', {
+        method: 'POST',
+        data: params,
+    });
+}
+
+export async function queryNonAttrRelation(params) {
+    return request(`/api/product/attrgroup/${params.attrGroupId}/noattr/relation`, {
+        params
     });
 }
