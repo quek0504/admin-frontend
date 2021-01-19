@@ -359,6 +359,12 @@ export default defineConfig({
                   path: '/attribute/spec',
                   component: './attribute/spec',
                 },
+                {
+                  name: 'sales',
+                  icon: 'smile',
+                  path: '/attribute/sales',
+                  component: './attribute/sales',
+                },
               ],
             },
             {

@@ -6,7 +6,7 @@ import ProTable from '@ant-design/pro-table';
 import Media from 'react-media';
 import CreateForm from './CreateForm';
 import UpdateForm from './UpdateForm';
-import { queryAttrInfo, queryAttrGroups, addSpecAttr, updateSpecAttr, removeSpecAttr } from '../service';
+import { queryAttrInfo, addSalesAttr, updateSalesAttr, removeSalesAttr } from '../service';
 import { TreeContext } from '../index';
 
 const { Text } = Typography;
@@ -20,7 +20,7 @@ const handleAdd = async (fields) => {
     const hide = message.loading('Creating');
 
     try {
-        await addSpecAttr({ ...fields });
+        await addSalesAttr({ ...fields });
         hide();
         message.success('Create Successful!');
         return true;
@@ -39,7 +39,7 @@ const handleUpdate = async (fields) => {
     const hide = message.loading('Updating');
 
     try {
-        await updateSpecAttr({ ...fields });
+        await updateSalesAttr({ ...fields });
         hide();
         message.success('Update Successful!');
         return true;
@@ -59,7 +59,7 @@ const handleRemove = async (selectedRows) => {
     if (!selectedRows) return true;
 
     try {
-        await removeSpecAttr({
+        await removeSalesAttr({
             key: selectedRows.map((row) => row.key),
         });
         hide();
@@ -81,19 +81,10 @@ const queryAttr = async (attrId) => {
     }
 };
 
-const queryAttrGroup = async (categoryId) => {
-    try {
-        return await queryAttrGroups(categoryId);
-    } catch (error) {
-        message.error('Something went wrong, please try again!');
-        return false;
-    }
-}
-
 const GroupTable = (props) => {
     const {
         productCategory,
-        specAttribute,
+        salesAttribute,
         getTable,
     } = props;
 
@@ -153,10 +144,6 @@ const GroupTable = (props) => {
         {
             title: 'Category Name',
             dataIndex: 'categoryName',
-        },
-        {
-            title: 'Attribute Group Name',
-            dataIndex: 'groupName',
         },
         {
             title: 'Searchable',
@@ -223,17 +210,17 @@ const GroupTable = (props) => {
                 {smallScreen => {
                     return (
                         <ProTable
-                            headerTitle="Specification Management"
+                            headerTitle="Sales Attribute Management"
                             actionRef={actionRef}
                             rowKey="attrId"
                             toolBarRender={() => [
                                 <Button type="primary" onClick={() => handleModalVisible(true)}>
-                                    <PlusOutlined /> New Specification
+                                    <PlusOutlined /> New Sales Attribute
                                 </Button>,
                             ]}
                             // request={(params, sorter, filter) => queryRule({ ...params, sorter, filter })}
                             columns={getResponsiveColumns(smallScreen)}
-                            dataSource={specAttribute.data}
+                            dataSource={salesAttribute.data}
                             rowSelection={{
                                 onChange: (_, selectedRows) => setSelectedRows(selectedRows),
                             }}
@@ -315,7 +302,6 @@ const GroupTable = (props) => {
                 }}
                 modalVisible={createModalVisible}
                 productCategory={productCategory}
-                queryAttrGroup={queryAttrGroup}
             />
             {formValues && Object.keys(formValues).length ? (
                 <UpdateForm
@@ -356,7 +342,6 @@ const GroupTable = (props) => {
                     }}
                     updateModalVisible={updateModalVisible}
                     productCategory={productCategory}
-                    queryAttrGroup={queryAttrGroup}
                     values={formValues}
                 />
             ) : null}

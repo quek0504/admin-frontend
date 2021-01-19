@@ -55,4 +55,5 @@ export default {
   'menu.attribute': 'Attribute',
   'menu.attribute.group': 'Group',
   'menu.attribute.specification': 'Specification (SPU)',
+  'menu.attribute.sales': 'Sales Attribute (SKU)',
 };

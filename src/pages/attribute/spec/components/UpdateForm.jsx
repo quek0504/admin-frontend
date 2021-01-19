@@ -36,7 +36,7 @@ const UpdateForm = (props) => {
       showDesc: values.showDesc ? true : false,
       enable: values.enable ? true : false,
     });
-    if(values.valueSelect) {
+    if (values.valueSelect) {
       form.setFieldsValue({
         valueSelect: values.valueSelect.split(',')
       })

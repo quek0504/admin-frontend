@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Cascader, Form, Input, Modal, Select, Switch } from 'antd';
 
 const { Option } = Select;
@@ -18,11 +18,9 @@ const CreateForm = (props) => {
     onCancel,
     modalVisible,
     productCategory,
-    queryAttrGroup
   } = props;
 
   const [form] = Form.useForm();
-  const [attrGroups, setAttrGroups] = useState([]);
 
   // Submit form
   const handleSubmit = () => {
@@ -34,22 +32,10 @@ const CreateForm = (props) => {
   const handleFinish = (formValues) => {
     onSubmit(formValues); // props function
     form.resetFields();
-    setAttrGroups([]);
   };
 
   const handleTag = (value) => {
     console.log(`selected ${value}`);
-  }
-
-  const onCascaderChange = (value) => {
-    form.setFieldsValue({
-      attrGroupId: null
-    })
-    queryAttrGroup(value[value.length - 1]).then((response) => {
-      if (response.msg === "success") {
-        setAttrGroups(response.page.list);
-      }
-    });
   }
 
   const filter = (inputValue, path) => {
@@ -86,7 +72,7 @@ const CreateForm = (props) => {
           <Select
             placeholder="Select attribute type"
           >
-            <Option value={1}>Specification</Option>
+            <Option value={0}>Sales Attribute</Option>
           </Select>
         </FormItem>
         <FormItem
@@ -132,32 +118,11 @@ const CreateForm = (props) => {
             options={productCategory.data}
             fieldNames={{ label: 'name', value: 'catId', children: 'children' }}
             showSearch={{ filter }}
-            onChange={onCascaderChange}
           />
         </FormItem>
         <FormItem
-          name="attrGroupId"
-          label="Attribute Group"
-          rules={[
-            {
-              required: true,
-              message: 'Attribute group must be selected',
-            },
-          ]}
-        >
-          <Select
-            placeholder="Select attribute group"
-          >
-            {
-              attrGroups.map((attrGroup, i) => {
-                return (<Option key={i} value={attrGroup.attrGroupId}>{attrGroup.attrGroupName}</Option>)
-              })
-            }
-          </Select>
-        </FormItem>
-        <FormItem
           name="searchType"
-          label="Specification Searchable"
+          label="Attribute Searchable"
           rules={[
             {
               required: true,
@@ -181,7 +146,7 @@ const CreateForm = (props) => {
         </FormItem>
         <FormItem
           name="enable"
-          label="Specification Enabled"
+          label="Attribute Enabled"
           rules={[
             {
               required: true,
@@ -202,7 +167,7 @@ const CreateForm = (props) => {
         padding: '32px 40px 48px',
       }}
       destroyOnClose
-      title="New Specification"
+      title="New Sales Attribute"
       visible={modalVisible}
       onCancel={onCancel}
       onOk={handleSubmit}

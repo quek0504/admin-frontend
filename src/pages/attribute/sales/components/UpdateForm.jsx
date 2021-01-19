@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Cascader, Form, Input, Modal, Select, Switch } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Cascader, Select, Form, Input, Modal, Switch } from 'antd';
 
 const { Option } = Select;
 const FormItem = Form.Item;
@@ -12,17 +12,33 @@ const formLayout = {
   },
 };
 
-const CreateForm = (props) => {
+const UpdateForm = (props) => {
+
   const {
     onSubmit,
     onCancel,
-    modalVisible,
+    updateModalVisible,
     productCategory,
-    queryAttrGroup
+    values,
   } = props;
 
   const [form] = Form.useForm();
-  const [attrGroups, setAttrGroups] = useState([]);
+
+  useEffect(() => {
+    form.setFieldsValue({
+      ...values,
+      categoryId: values.categoryPath,
+      valueType: values.valueType ? true : false,
+      searchType: values.searchType ? true : false,
+      showDesc: values.showDesc ? true : false,
+      enable: values.enable ? true : false,
+    });
+    if (values.valueSelect) {
+      form.setFieldsValue({
+        valueSelect: values.valueSelect.split(',')
+      })
+    }
+  }, [values]);
 
   // Submit form
   const handleSubmit = () => {
@@ -32,24 +48,15 @@ const CreateForm = (props) => {
 
   // Triggered after submitting the form and verifying data successfully
   const handleFinish = (formValues) => {
-    onSubmit(formValues); // props function
-    form.resetFields();
-    setAttrGroups([]);
+    let formWithId = {
+      ...formValues,
+      'attrId': values.attrId
+    }
+    onSubmit(formWithId); // props function
   };
 
   const handleTag = (value) => {
     console.log(`selected ${value}`);
-  }
-
-  const onCascaderChange = (value) => {
-    form.setFieldsValue({
-      attrGroupId: null
-    })
-    queryAttrGroup(value[value.length - 1]).then((response) => {
-      if (response.msg === "success") {
-        setAttrGroups(response.page.list);
-      }
-    });
   }
 
   const filter = (inputValue, path) => {
@@ -86,7 +93,7 @@ const CreateForm = (props) => {
           <Select
             placeholder="Select attribute type"
           >
-            <Option value={1}>Specification</Option>
+            <Option value={0}>Sales Attribute</Option>
           </Select>
         </FormItem>
         <FormItem
@@ -95,7 +102,7 @@ const CreateForm = (props) => {
           rules={[
             {
               required: true,
-            }
+            },
           ]}
           valuePropName="checked"
         >
@@ -132,36 +139,15 @@ const CreateForm = (props) => {
             options={productCategory.data}
             fieldNames={{ label: 'name', value: 'catId', children: 'children' }}
             showSearch={{ filter }}
-            onChange={onCascaderChange}
           />
         </FormItem>
         <FormItem
-          name="attrGroupId"
-          label="Attribute Group"
-          rules={[
-            {
-              required: true,
-              message: 'Attribute group must be selected',
-            },
-          ]}
-        >
-          <Select
-            placeholder="Select attribute group"
-          >
-            {
-              attrGroups.map((attrGroup, i) => {
-                return (<Option key={i} value={attrGroup.attrGroupId}>{attrGroup.attrGroupName}</Option>)
-              })
-            }
-          </Select>
-        </FormItem>
-        <FormItem
           name="searchType"
-          label="Specification Searchable"
+          label="Attribute Searchable"
           rules={[
             {
               required: true,
-            }
+            },
           ]}
           valuePropName="checked"
         >
@@ -173,7 +159,7 @@ const CreateForm = (props) => {
           rules={[
             {
               required: true,
-            }
+            },
           ]}
           valuePropName="checked"
         >
@@ -181,11 +167,11 @@ const CreateForm = (props) => {
         </FormItem>
         <FormItem
           name="enable"
-          label="Specification Enabled"
+          label="Attribute Enabled"
           rules={[
             {
               required: true,
-            }
+            },
           ]}
           valuePropName="checked"
         >
@@ -202,8 +188,8 @@ const CreateForm = (props) => {
         padding: '32px 40px 48px',
       }}
       destroyOnClose
-      title="New Specification"
-      visible={modalVisible}
+      title="Sales Attribute Update"
+      visible={updateModalVisible}
       onCancel={onCancel}
       onOk={handleSubmit}
     >
@@ -211,11 +197,11 @@ const CreateForm = (props) => {
         {...formLayout}
         form={form}
         onFinish={handleFinish}
-        initialValues={{ valueType: false, searchType: false, showDesc: false, enable: false }} >
+      >
         {renderContent()}
       </Form>
     </Modal>
   );
 };
 
-export default CreateForm;
+export default UpdateForm;
