@@ -368,6 +368,23 @@ export default defineConfig({
               ],
             },
             {
+              name: 'member',
+              icon: 'UserSwitchOutlined',
+              path: '/member',
+              routes: [
+                {
+                  path: '/',
+                  redirect: '/member/list',
+                },
+                {
+                  name: 'list',
+                  icon: 'smile',
+                  path: '/member/list',
+                  component: './member/list',
+                },
+              ],
+            },
+            {
               component: '404',
             },
           ],

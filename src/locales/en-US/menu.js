@@ -56,4 +56,6 @@ export default {
   'menu.attribute.group': 'Group',
   'menu.attribute.specification': 'Specification (SPU)',
   'menu.attribute.sales': 'Sales Attribute (SKU)',
+  'menu.member' : 'Member',
+  'menu.member.list': 'Member Type List',
 };
