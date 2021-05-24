@@ -50,8 +50,8 @@ const UploadForm = (props) => {
             type: 'productBrand/getPreSigned',
             payload: file.name
         }).then((response) => {
-            const { url, endPointUrl } = response.data;
-            if (response.code === 0) {
+            if (response.msg === "success") {
+                const { url, endPointUrl } = response.data;
                 dispatch({
                     type: 'productBrand/upload',
                     payload: {
@@ -59,16 +59,22 @@ const UploadForm = (props) => {
                         image: file
                     }
                 }).then((uploadResponse) => {
-                    if (uploadResponse.code === 0) {
+                    if (uploadResponse.msg === "success") {
                         setLoading(false);
                         setImageUrl(endPointUrl);
                         setLogoField(endPointUrl);
+                        message.success("Upload successful!");
                         onSuccess();
                     } else {
-                        message.error("Upload Unsuccessful!")
+                        message.error("Upload to bucket unsuccessful!");
                         onError();
                     }
                 })
+            } 
+            // get presigned url failed
+            else {
+                message.error("Service not available at this moment, please try again later!");
+                onError();
             }
         });
     }
@@ -82,10 +88,7 @@ const UploadForm = (props) => {
 
     return (
         <Upload
-            name="avatar"
             listType="picture-card"
-            className="avatar-uploader"
-            defaultFileList={defaultFileList}
             beforeUpload={beforeUpload}
             onPreview={handlePreview}
             onChange={handleChange}

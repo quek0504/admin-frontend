@@ -32,23 +32,35 @@ export async function updateBrand(params) {
 }
 
 export async function getPreSignedData(params) {
-  return request(`/api/thirdparty/oss/policy?fileName=${params}`);
+  return request(`/api/thirdparty/oss/policy?fileName=${params}`)
+  // custom error response
+  .catch((error) => {
+    console.log(error);
+    return {
+      code: 500,
+    }
+  });
 }
 
 export async function uploadLogo(params) {
   return request(params.url, {
     method: 'PUT',
-    data: params.image
-  }).then((response) => {
-    console.log(response); // empty response from aws
-    // custom response as we get empty response, might have better implementation
-    return {
-      code: 0,
-    };
+    data: params.image,
   })
+    .then((response) => {
+      console.log(response); // empty response from aws
+      // custom response
+      return {
+        msg: "success",
+        code: 0,
+      };
+    })
     .catch((error) => {
       console.log(error);
-      return error;
+      // custom error response
+      return {
+        code: 500,
+      }
     });
 }
 

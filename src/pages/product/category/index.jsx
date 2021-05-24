@@ -342,7 +342,7 @@ export const ProductCategory = (props) => {
       const { parentCid } = values;
       const treeExpandedKey = treeExpandedKeys;
 
-      if (submitResponse.code === 0) {
+      if (submitResponse.msg === "success") {
         message.success('Transaction successful!');
         dispatch({
           type: 'productCategory/fetch',
@@ -351,7 +351,7 @@ export const ProductCategory = (props) => {
           if (treeExpandedKey.indexOf(`${parentCid}`) === -1) {
             setTreeExpandedKeys([...treeExpandedKeys, `${parentCid}`]);
           }
-          if (fetchResponse.code === 0) {
+          if (fetchResponse.msg === "success") {
             setTreeSelectedKeys([`${newCatId}`]);
           }
         });
@@ -367,7 +367,7 @@ export const ProductCategory = (props) => {
         type: 'productCategory/dragUpdateSubmit',
         payload: updateArray.current, // useRef
       }).then((response) => {
-        if (response.code === 0) {
+        if (response.msg === "success") {
           message.success('Transaction successful!');
           updateArray.current = []; // clear data
           dispatch({
@@ -387,7 +387,7 @@ export const ProductCategory = (props) => {
       type: 'productCategory/submit',
       payload: idsArray,
     }).then((response) => {
-      if (response.code === 0) {
+      if (response.msg === "success") {
         message.success('Category removed!');
         // remove each checked keys in state to sync
         idsArray.map(

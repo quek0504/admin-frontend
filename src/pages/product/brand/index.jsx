@@ -1,7 +1,7 @@
 import { PlusOutlined } from '@ant-design/icons';
-import { Button, Divider, Image, message, Drawer } from 'antd';
+import { Button, Divider, Image, Modal, message, Drawer } from 'antd';
 import React, { useState, useRef, useEffect } from 'react';
-import { PageContainer, FooterToolbar } from '@ant-design/pro-layout';
+import { PageContainer } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import ProDescriptions from '@ant-design/pro-descriptions';
 import Media from 'react-media';
@@ -53,16 +53,13 @@ const handleUpdate = async (fields) => {
  * @param selectedRows
  */
 
-const handleRemove = async (selectedRows) => {
+const handleRemove = async (selectedId) => {
   const hide = message.loading('Deleting');
-  if (!selectedRows) return true;
 
   try {
-    await removeBrand({
-      key: selectedRows.map((row) => row.key),
-    });
+    await removeBrand([selectedId]);
     hide();
-    message.success('Delete Successful! Going to refresh...');
+    message.success('Delete Successful!');
     return true;
   } catch (error) {
     hide();
@@ -72,7 +69,6 @@ const handleRemove = async (selectedRows) => {
 };
 
 const ProductBrand = (props) => {
-
   const {
     dispatch,
     productBrand, // data from model
@@ -80,12 +76,12 @@ const ProductBrand = (props) => {
 
   const [createModalVisible, handleModalVisible] = useState(false);
   const [updateModalVisible, handleUpdateModalVisible] = useState(false);
+  const [deleteModalVisible, handleDeleteModalVisible] = useState(false);
   const [categoryRelationModalVisible, handleRelationModalVisible] = useState(false);
   const [selectedBrandId, setSelectedBrandId] = useState();
   const [stepFormValues, setStepFormValues] = useState({});
   const actionRef = useRef();
   const [row, setRow] = useState();
-  const [selectedRowsState, setSelectedRows] = useState([]);
   const columns = [
     {
       title: 'ID',
@@ -115,10 +111,10 @@ const ProductBrand = (props) => {
       hideOnSmall: true,
       render: (_, entity) => {
         if (entity.logo) {
-          return <Image src={entity.logo} height={200} width={200} />
+          return <Image src={entity.logo} height={200} width={200} />;
         }
-        return <p>No Image</p>
-      }
+        return <p>No Image</p>;
+      },
     },
     {
       title: 'Description',
@@ -172,7 +168,34 @@ const ProductBrand = (props) => {
             Edit
           </a>
           <Divider type="vertical" />
-          <a href="">Delete</a>
+          <a
+            onClick={() => {
+              handleDeleteModalVisible(true);
+            }}
+          >
+            Delete
+          </a>
+          {/* Delete Modal */}
+          <Modal
+            title="Confirmation"
+            visible={deleteModalVisible}
+            onOk={async () => {
+              const success = await handleRemove(record.brandId);
+
+              if (success) {
+                handleDeleteModalVisible(false);
+                // refresh table
+                dispatch({
+                  type: 'productBrand/fetch',
+                });
+              }
+            }}
+            onCancel={() => {
+              handleDeleteModalVisible(false);
+            }}
+          >
+            Are you sure want to delete this record?
+          </Modal>
         </>
       ),
     },
@@ -190,7 +213,7 @@ const ProductBrand = (props) => {
   return (
     <PageContainer>
       <Media query="(max-width: 992px)">
-        {smallScreen => {
+        {(smallScreen) => {
           return (
             <ProTable
               headerTitle="Brand Management"
@@ -207,43 +230,10 @@ const ProductBrand = (props) => {
               // request={(params, sorter, filter) => queryRule({ ...params, sorter, filter })}
               columns={getResponsiveColumns(smallScreen)}
               dataSource={productBrand.data}
-              rowSelection={{
-                onChange: (_, selectedRows) => setSelectedRows(selectedRows),
-              }}
             />
-          )
-        }
-        }
+          );
+        }}
       </Media>
-      {selectedRowsState?.length > 0 && (
-        <FooterToolbar
-          extra={
-            <div>
-              Selected{' '}
-              <a
-                style={{
-                  fontWeight: 600,
-                }}
-              >
-                {selectedRowsState.length}
-              </a>{' '}
-              items&nbsp;&nbsp;
-              <span>{/*  */}</span>
-            </div>
-          }
-        >
-          <Button
-            onClick={async () => {
-              await handleRemove(selectedRowsState);
-              setSelectedRows([]);
-              actionRef.current?.reloadAndRest?.();
-            }}
-          >
-            Batch Delete
-          </Button>
-          <Button type="primary">Batch Update</Button>
-        </FooterToolbar>
-      )}
       <CreateForm
         onSubmit={async (value) => {
           const success = await handleAdd(value);
@@ -252,8 +242,8 @@ const ProductBrand = (props) => {
             handleModalVisible(false);
 
             dispatch({
-              type: 'productBrand/fetch'
-            })
+              type: 'productBrand/fetch',
+            });
 
             if (actionRef.current) {
               actionRef.current.reload();
@@ -261,7 +251,7 @@ const ProductBrand = (props) => {
           }
         }}
         onCancel={() => {
-          handleModalVisible(false)
+          handleModalVisible(false);
         }}
         modalVisible={createModalVisible}
       />
@@ -275,8 +265,8 @@ const ProductBrand = (props) => {
               setStepFormValues({});
 
               dispatch({
-                type: 'productBrand/fetch'
-              })
+                type: 'productBrand/fetch',
+              });
 
               if (actionRef.current) {
                 actionRef.current.reload();
@@ -295,14 +285,13 @@ const ProductBrand = (props) => {
       {selectedBrandId ? (
         <CategoryRelationModal
           onCloseModal={() => {
-            handleRelationModalVisible(false)
+            handleRelationModalVisible(false);
             setSelectedBrandId();
           }}
           modalVisible={categoryRelationModalVisible}
           selectedBrandId={selectedBrandId}
-        />)
-        :
-        null}
+        />
+      ) : null}
 
       <Drawer
         width={600}

@@ -99,7 +99,7 @@ const CategoryRelationModal = (props) => {
           categoryId: cateogryPath[cateogryPath.length - 1],
         }
       }).then((response) => {
-        if (response.code === 0) {
+        if (response.msg === "success") {
           dispatch({
             type: 'productBrand/fetchRelation',
             payload: selectedBrandId
