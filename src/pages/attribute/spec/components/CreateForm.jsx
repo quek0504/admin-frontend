@@ -107,14 +107,7 @@ const CreateForm = (props) => {
         >
           <Select mode="tags" style={{ width: '100%' }} placeholder="Values" onChange={handleTag} />
         </FormItem>
-        <FormItem name="icon" label="Icon"
-          rules={[
-            {
-              required: true,
-              message: 'Icon must not be empty!'
-            },
-          ]}
-        >
+        <FormItem name="icon" label="Icon">
           <Input placeholder="Icon" />
         </FormItem>
         <FormItem
@@ -138,6 +131,11 @@ const CreateForm = (props) => {
         <FormItem
           name="attrGroupId"
           label="Attribute Group"
+          rules={[
+            {
+              required: true,
+            }
+          ]}
         >
           <Select
             placeholder="Select attribute group"

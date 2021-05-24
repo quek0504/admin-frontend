@@ -1,7 +1,6 @@
 import { PlusOutlined, CheckCircleFilled, CloseCircleFilled } from '@ant-design/icons';
-import { Button, Divider, message, Typography } from 'antd';
+import { Button, Divider, Modal, message, Typography } from 'antd';
 import React, { useState, useRef, useContext } from 'react';
-import { FooterToolbar } from '@ant-design/pro-layout';
 import ProTable from '@ant-design/pro-table';
 import Media from 'react-media';
 import CreateForm from './CreateForm';
@@ -54,16 +53,13 @@ const handleUpdate = async (fields) => {
  * @param selectedRows
  */
 
-const handleRemove = async (selectedRows) => {
+const handleRemove = async (selectedId) => {
     const hide = message.loading('Deleting');
-    if (!selectedRows) return true;
 
     try {
-        await removeSalesAttr({
-            key: selectedRows.map((row) => row.key),
-        });
+        await removeSalesAttr([selectedId]);
         hide();
-        message.success('Delete Successful! Going to refresh...');
+        message.success('Delete Successful!');
         return true;
     } catch (error) {
         hide();
@@ -95,10 +91,9 @@ const GroupTable = (props) => {
 
     const [createModalVisible, handleModalVisible] = useState(false);
     const [updateModalVisible, handleUpdateModalVisible] = useState(false);
+    const [deleteModalVisible, handleDeleteModalVisible] = useState(false);
     const [formValues, setFormValues] = useState({});
     const actionRef = useRef();
-    const [row, setRow] = useState();
-    const [selectedRowsState, setSelectedRows] = useState([]);
     const columns = [
         {
             title: 'ID',
@@ -116,9 +111,6 @@ const GroupTable = (props) => {
                         message: 'Attribute group name must not be empty!',
                     },
                 ],
-            },
-            render: (dom, entity) => {
-                return <a onClick={() => setRow(entity)}>{dom}</a>;
             },
         },
         {
@@ -195,7 +187,29 @@ const GroupTable = (props) => {
                         Edit
                     </a>
                     <Divider type="vertical" />
-                    <a href="">Delete</a>
+                    <a  onClick={() => {
+                            handleDeleteModalVisible(true);
+                        }}
+                    >
+                        Delete
+                    </a>
+                     {/* Delete Modal */}
+                    <Modal
+                        title="Confirmation"
+                        visible={deleteModalVisible}
+                        onOk={ async () => {
+                            const success = await handleRemove(record.attrId);
+
+                            if (success) {
+                                handleDeleteModalVisible(false);
+                                // refresh table
+                                getTable([record.attrId], "");
+                            }
+                        }}
+                        onCancel={ () => {handleDeleteModalVisible(false)}}
+                    >
+                        Are you sure want to delete this record?
+                    </Modal>
                 </>
             ),
         },
@@ -221,9 +235,6 @@ const GroupTable = (props) => {
                             // request={(params, sorter, filter) => queryRule({ ...params, sorter, filter })}
                             columns={getResponsiveColumns(smallScreen)}
                             dataSource={salesAttribute.data}
-                            rowSelection={{
-                                onChange: (_, selectedRows) => setSelectedRows(selectedRows),
-                            }}
                             search={false}
                             options={{
                                 search: true,
@@ -236,34 +247,6 @@ const GroupTable = (props) => {
                     )
                 }}
             </Media>
-            {selectedRowsState?.length > 0 && (
-                <FooterToolbar
-                    extra={
-                        <div>
-                            Selected{' '}
-                            <a
-                                style={{
-                                    fontWeight: 600,
-                                }}
-                            >
-                                {selectedRowsState.length}
-                            </a>{' '}
-                items&nbsp;&nbsp;
-              <span>{/*  */}</span>
-                        </div>
-                    }
-                >
-                    <Button
-                        onClick={async () => {
-                            await handleRemove(selectedRowsState);
-                            setSelectedRows([]);
-                            actionRef.current?.reloadAndRest?.();
-                        }}
-                    >
-                        Batch Delete
-                    </Button>
-                </FooterToolbar>
-            )}
             <CreateForm
                 onSubmit={async (value) => {
                     let toSubmit = {
@@ -280,7 +263,7 @@ const GroupTable = (props) => {
                     if (success) {
                         handleModalVisible(false);
 
-                        getTable([toSubmit.categoryId], null);
+                        getTable([toSubmit.categoryId], "");
 
                         // keys need to be a string array
                         setTreeExpandedKeys(value.categoryId.map(String)); // convert int array to string array

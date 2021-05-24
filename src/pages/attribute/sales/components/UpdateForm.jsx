@@ -114,14 +114,7 @@ const UpdateForm = (props) => {
         >
           <Select mode="tags" style={{ width: '100%' }} placeholder="Values" onChange={handleTag} />
         </FormItem>
-        <FormItem name="icon" label="Icon"
-          rules={[
-            {
-              required: true,
-              message: 'Icon must not be empty!'
-            },
-          ]}
-        >
+        <FormItem name="icon" label="Icon">
           <Input placeholder="Icon" />
         </FormItem>
         <FormItem
