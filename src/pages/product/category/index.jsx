@@ -53,9 +53,9 @@ export const ProductCategory = (props) => {
     const checkedNodesData = [];
     for (let i = 0; i < checkedNodes.length; i++) {
       checkedNodesData.push({
-        'catId': checkedNodes[i].key,
-        'name': checkedNodes[i].title.props.children[0].props.children,
-      })
+        catId: checkedNodes[i].key,
+        name: checkedNodes[i].title.props.children[0].props.children,
+      });
     }
     setTreeCheckedKeys(checkedKeys);
     setTreeCheckedNodesData(checkedNodesData);
@@ -78,7 +78,7 @@ export const ProductCategory = (props) => {
     const dropPos = info.node.props.pos.split('-');
     const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
 
-    // other block scope variables : maxLevel ,pCid ,data ,dragObj ,dropObj 
+    // other block scope variables : maxLevel ,pCid ,data ,dragObj ,dropObj
 
     // Find matching product category using dragKey/dropKey
     const loop = (data, key, callback) => {
@@ -272,7 +272,7 @@ export const ProductCategory = (props) => {
     // updateArray data is sent to database when button is clicked
     dispatch({
       type: 'productCategory/dragUpdate',
-      payload: data
+      payload: data,
     }).then(() => {
       const treeExpandedKey = treeExpandedKeys;
       if (treeExpandedKey.indexOf(`${pCid}`) === -1) {
@@ -289,15 +289,16 @@ export const ProductCategory = (props) => {
   };
 
   const showEditModal = (item) => {
-    setVisible(true);
     setEdit(true);
-
     // get latest product category info and put it in modal
     dispatch({
       type: 'productCategory/getInfo',
       payload: item.catId,
     }).then((response) => {
-      setCurrentItem(response.data);
+      if (response) {
+        setCurrentItem(response.data);
+        setVisible(true);
+      }
     });
   };
 
@@ -338,23 +339,19 @@ export const ProductCategory = (props) => {
         edit,
       },
     }).then((submitResponse) => {
-      const { newCatId } = submitResponse;
-      const { parentCid } = values;
-      const treeExpandedKey = treeExpandedKeys;
-
-      if (submitResponse.msg === "success") {
+      if (submitResponse) {
+        const { newCatId } = submitResponse;
+        const { parentCid } = values;
+        const treeExpandedKey = treeExpandedKeys;
         message.success('Transaction successful!');
         dispatch({
           type: 'productCategory/fetch',
-        }).then((fetchResponse) => {
-          // if parent node is not already expanded, add parent node key to expanded key
-          if (treeExpandedKey.indexOf(`${parentCid}`) === -1) {
-            setTreeExpandedKeys([...treeExpandedKeys, `${parentCid}`]);
-          }
-          if (fetchResponse.msg === "success") {
-            setTreeSelectedKeys([`${newCatId}`]);
-          }
         });
+        // if parent node is not already expanded, add parent node key to expanded key
+        if (treeExpandedKey.indexOf(`${parentCid}`) === -1) {
+          setTreeExpandedKeys([...treeExpandedKeys, `${parentCid}`]);
+        }
+        setTreeSelectedKeys([`${newCatId}`]);
       } else {
         message.error('Request unsuccessful!');
       }
@@ -367,45 +364,37 @@ export const ProductCategory = (props) => {
         type: 'productCategory/dragUpdateSubmit',
         payload: updateArray.current, // useRef
       }).then((response) => {
-        if (response.msg === "success") {
+        if (response) {
           message.success('Transaction successful!');
           updateArray.current = []; // clear data
           dispatch({
             type: 'productCategory/fetch',
-          })
+          });
         } else {
-          message.error('Request unsuccessful!');
+          message.error('Drag update unsuccessful!');
         }
       });
     } else {
       message.error('No data changed!');
     }
-  }
+  };
 
   const deleteItem = (idsArray) => {
     dispatch({
       type: 'productCategory/submit',
       payload: idsArray,
     }).then((response) => {
-      if (response.msg === "success") {
+      if (response) {
         message.success('Category removed!');
-        // remove each checked keys in state to sync
-        idsArray.map(
-          ids => {
-            setTreeCheckedKeys(treeCheckedKeys.filter(
-              checkedKeys => checkedKeys != ids
-            ));
-            setTreeCheckedNodesData(treeCheckedNodesData.filter(
-              checkedNodes => checkedNodes.catId != ids
-            ));
-          }
-        )
         // fetch data again after removing category
         dispatch({
           type: 'productCategory/fetch',
         });
+        // remove each checked keys in state to sync
+        setTreeCheckedKeys([]);
+        setTreeCheckedNodesData([]);
       } else {
-        message.error('Something went wrong!');
+        message.error('Request unsuccessful!');
       }
     });
   };
@@ -474,11 +463,11 @@ export const ProductCategory = (props) => {
             padding: '0 32px 40px 32px',
           }}
         >
-          {loading ?
+          {loading ? (
             <div style={{ padding: '20px 20px 0px 0px' }}>
               <Spin tip="category loading..." />
             </div>
-            :
+          ) : (
             <Space>
               <Switch
                 checkedChildren="Close Draggable Effect"
@@ -489,31 +478,25 @@ export const ProductCategory = (props) => {
                 }}
               />
               <Divider orientation="left" />
-              {draggable ?
-                <Button
-                  type="primary"
-                  onClick={handleDragUpdate}
-                >
+              {draggable ? (
+                <Button type="primary" onClick={handleDragUpdate}>
                   Submit Update
-              </Button>
-                :
-                null
-              }
+                </Button>
+              ) : null}
               <Button
                 type="danger"
                 onClick={() => {
                   if (treeCheckedKeys.length > 0) {
-                    showDeleteModal(treeCheckedNodesData)
+                    showDeleteModal(treeCheckedNodesData);
                   } else {
                     message.error('No data selected!');
                   }
-                }
-                }
+                }}
               >
                 Submit Batch Delete
-            </Button>
+              </Button>
             </Space>
-          }
+          )}
         </Card>
         <Card
           bordered={false}
@@ -536,7 +519,7 @@ export const ProductCategory = (props) => {
             {renderTreeNodes(productCategory.data)}
           </Tree>
         </Card>
-      </PageContainer >
+      </PageContainer>
 
       <OperationModal
         visible={visible}
@@ -545,11 +528,11 @@ export const ProductCategory = (props) => {
         onCancel={handleCancel}
         onSubmit={handleSubmit}
       />
-    </div >
+    </div>
   );
 };
 
 export default connect(({ productCategory, loading }) => ({
   productCategory,
-  loading: loading.models.productCategory
+  loading: loading.models.productCategory,
 }))(ProductCategory);

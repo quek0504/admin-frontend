@@ -1,11 +1,31 @@
 import request from 'umi-request';
+import { message } from 'antd';
+
+const errorHandler = (error) => {
+    const { response } = error;
+    const codeMap = {
+        500: 'Internal server error',
+        503: 'Service not available',
+        504: 'Gateway timeout',
+      // ....
+    };
+    if (response && response.status) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+        message.error(codeMap[response.status] + ', fail to fetch product category');
+    } else {
+      // The request was made but no response was received or error occurs when setting up the request.
+        message.error('Cannot connect to server, please check your network');
+    }
+    throw response;
+}
 
 export async function queryProductCategory() {
-  return request('/api/product/category/list/tree');
+  return request('/api/product/category/list/tree', { errorHandler });
 }
 
 export async function queryProductCategoryInfo(params) {
-  return request(`/api/product/category/info/${params}`);
+  return request(`/api/product/category/info/${params}`, { errorHandler });
 }
 
 export async function removeProductCategory(params) {

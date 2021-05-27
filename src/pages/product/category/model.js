@@ -14,12 +14,15 @@ const Model = {
   },
   effects: {
     *fetch({ payload }, { call, put }) {
-      const response = yield call(queryProductCategory, payload);
-      yield put({
-        type: 'queryProductCategory',
-        payload: response.data,
-      });
-      return response;
+      try {
+        const response = yield call(queryProductCategory, payload);
+        yield put({
+          type: 'queryProductCategory',
+          payload: response.data,
+        });
+      } catch (error) {
+        console.log(error)
+      }
     },
     *dragUpdate({ payload }, { put }) {
       yield put({
@@ -28,8 +31,12 @@ const Model = {
       })
     },
     *getInfo({ payload }, { call }) {
-      const response = yield call(queryProductCategoryInfo, payload);
-      return response;
+      try {
+        const response = yield call(queryProductCategoryInfo, payload);
+        return response;
+      } catch (error) {
+        console.log(error);
+      }
     },
     *submit({ payload }, { call }) {
       let callback;
@@ -40,12 +47,21 @@ const Model = {
       } else {
         callback = updateProductCategory;
       }
-      const response = yield call(callback, payload);
-      return response;
+      try {
+        const response = yield call(callback, payload);
+        return response;
+      } catch (error) {
+        console.log(error);
+      }
+
     },
     *dragUpdateSubmit({payload}, {call}) {
-      const response = yield call(updateSortProductCategory, payload);
-      return response;
+      try {
+        const response = yield call(updateSortProductCategory, payload);
+        return response;
+      } catch (error) {
+        console.log(error);
+      }
     }
   },
   reducers: {
