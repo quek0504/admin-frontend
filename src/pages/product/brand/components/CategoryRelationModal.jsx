@@ -20,11 +20,17 @@ const CategoryRelationModal = (props) => {
     dispatch({
       type: 'productBrand/fetchRelation',
       payload: selectedBrandId
+    }).then((response) => {
+      // fetch relation return true
+      if(response) {
+        setRender(true);
+      }
     });
-  }, []);
+  }, [selectedBrandId]);
 
   const [showRelation, setShowRelation] = useState(true);
   const [cateogryPath, setCategoryPath] = useState([]);
+  const [render, setRender] = useState(false);
 
   const columns = [
     {
@@ -60,7 +66,7 @@ const CategoryRelationModal = (props) => {
       type: 'productBrand/deleteRelation',
       payload: [relationId]
     }).then((response) => {
-      if (response.msg === "success") {
+      if (response) {
         message.success('Category removed from brand!');
         dispatch({
           type: 'productBrand/fetchRelation',
@@ -99,7 +105,11 @@ const CategoryRelationModal = (props) => {
           categoryId: cateogryPath[cateogryPath.length - 1],
         }
       }).then((response) => {
-        if (response.msg === "success") {
+        if (response) {
+          if(response.msg == "Relation exists!") {
+            message.error('Category already added to brand, please select other category!');
+            return;
+          }
           dispatch({
             type: 'productBrand/fetchRelation',
             payload: selectedBrandId
@@ -108,7 +118,7 @@ const CategoryRelationModal = (props) => {
             setShowRelation(!showRelation); // toggle to table view
           });
         } else {
-          message.error('Category already added to brand, please select other category!');
+          message.error('Something went wrong, please try again later!');
         }
       })
     }
@@ -160,7 +170,10 @@ const CategoryRelationModal = (props) => {
       onOk={() => onSubmit(showRelation)}
       width={640}
     >
-      {renderContent(showRelation)}
+      {
+        render ? 
+        renderContent(showRelation) : null
+      }
     </Modal>
   );
 };

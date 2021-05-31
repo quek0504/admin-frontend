@@ -1,13 +1,27 @@
 import request from 'umi-request';
+import { message } from 'antd';
 
-// export async function queryRule(params) {
-//   return request('/api/rule', {
-//     params,
-//   });
-// }
+const errorHandler = (error) => {
+  const { response } = error;
+  const codeMap = {
+      500: 'Internal server error',
+      503: 'Service not available',
+      504: 'Gateway timeout',
+    // ....
+  };
+  if (response && response.status) {
+    // The request was made and the server responded with a status code
+    // that falls out of the range of 2xx
+    message.error(codeMap[response.status] + ', fail to fetch product brand');
+  } else {
+    // The request was made but no response was received or error occurs when setting up the request.
+      message.error('Cannot connect to server, please check your network');
+  }
+  throw response;
+}
 
 export async function queryBrand() {
-  return request('/api/product/brand/list');
+  return request('/api/product/brand/list', { errorHandler });
 }
 
 export async function removeBrand(params) {
