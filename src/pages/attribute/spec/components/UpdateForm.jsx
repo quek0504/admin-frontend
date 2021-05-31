@@ -71,12 +71,15 @@ const UpdateForm = (props) => {
   const onCascaderChange = (value) => {
     form.setFieldsValue({
       attrGroupId: null
-    })
-    queryAttrGroup(value[value.length - 1]).then((response) => {
-      if (response.msg === "success") {
-        setAttrGroups(response.page.list);
-      }
     });
+    // make sure cascader has selected value
+    if(value[value.length - 1]) {
+      queryAttrGroup(value[value.length - 1]).then((response) => {
+        if (response) {
+          setAttrGroups(response.page.list);
+        }
+      });
+    }
   }
 
   const onSelectFocus = () => {
@@ -85,7 +88,7 @@ const UpdateForm = (props) => {
     if (isDefaultAttrGroup) {
       let categoryPath = form.getFieldValue('categoryId');
       queryAttrGroup(categoryPath[categoryPath.length - 1]).then((response) => {
-        if (response.msg === "success") {
+        if (response) {
           setAttrGroups(response.page.list);
           setIsDefaultAttrGroup(false);
         }

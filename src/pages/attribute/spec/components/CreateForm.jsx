@@ -44,12 +44,15 @@ const CreateForm = (props) => {
   const onCascaderChange = (value) => {
     form.setFieldsValue({
       attrGroupId: null
-    })
-    queryAttrGroup(value[value.length - 1]).then((response) => {
-      if (response.msg === "success") {
-        setAttrGroups(response.page.list);
-      }
     });
+    // make sure cascader has selected value
+    if(value[value.length - 1]) {
+      queryAttrGroup(value[value.length - 1]).then((response) => {
+        if (response) {
+          setAttrGroups(response.page.list);
+        }
+      });
+    }
   }
 
   const filter = (inputValue, path) => {

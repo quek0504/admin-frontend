@@ -16,18 +16,26 @@ const Model = {
     },
     effects: {
         *fetch({ payload }, { call, put }) {
-            const response = yield call(fetchAttrGroup, payload);
-            yield put({
-                type: 'getAttrGroup',
-                payload: response.page.list,
-            });
+            try {
+                const response = yield call(fetchAttrGroup, payload);
+                yield put({
+                    type: 'getAttrGroup',
+                    payload: response.page.list,
+                });
+            } catch (error) {
+                console.log(error);
+            }
         },
         *query({ payload }, { call, put }) {
-            const response = yield call(queryAttrGroup, payload);
-            yield put({
-                type: 'getAttrGroup',
-                payload: response.page.list,
-            });
+            try {
+                const response = yield call(queryAttrGroup, payload);
+                yield put({
+                    type: 'getAttrGroup',
+                    payload: response.page.list,
+                });
+            } catch (error) {
+                console.log(error);
+            }
         },
         *clear({}, { put }) {
             yield put({
@@ -35,26 +43,45 @@ const Model = {
             });
         },
         *fetchRelation({ payload }, { call, put }) {
-            const response = yield call(queryAttrRelation, payload);
-            yield put({
-                type: 'queryRelation',
-                payload: response.data,
-            });
+            try {
+                const response = yield call(queryAttrRelation, payload);
+                yield put({
+                    type: 'queryRelation',
+                    payload: response.data,
+                });
+                return true;
+            } catch (error) {
+                console.log(error);
+            }
+
         },
         *saveRelation({ payload }, { call }) {
-            const response = yield call(saveAttrRelation, payload);
-            return response;
+            try {
+                const response = yield call(saveAttrRelation, payload);
+                return response;
+            } catch (error) {
+                console.log(error);
+            }
         },
         *deleteRelation({ payload }, { call }) {
-            const response = yield call(deleteAttrRelation, payload);
-            return response;
+            try {
+                const response = yield call(deleteAttrRelation, payload);
+                return response;
+            } catch (error) {
+                console.log(error);
+            }
         },
         *fetchNonRelation({ payload }, { call, put }) {
-            const response = yield call(queryNonAttrRelation, payload);
-            yield put({
-                type: 'queryNonRelation',
-                payload: response.page.list,
-            });
+            try {
+                const response = yield call(queryNonAttrRelation, payload);
+                yield put({
+                    type: 'queryNonRelation',
+                    payload: response.page.list,
+                });
+                return true;
+            } catch (error) {
+                console.log(error);
+            }
         },
     },
     reducers: {

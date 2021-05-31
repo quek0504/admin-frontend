@@ -1,11 +1,32 @@
 import request from 'umi-request';
+import { message } from 'antd';
+
+const errorHandler = (error) => {
+    const { response } = error;
+    const codeMap = {
+        500: 'Internal server error',
+        503: 'Service not available',
+        504: 'Gateway timeout',
+        // ....
+    };
+    if (response && response.status) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        message.error(codeMap[response.status] + ', fail to fetch attribute group info');
+    } else {
+        // The request was made but no response was received or error occurs when setting up the request.
+        message.error('Cannot connect to server, please check your network');
+    }
+    throw response;
+}
 
 export async function fetchAttrGroup() {
-    return request('/api/product/attrgroup/list/0');
+    return request('/api/product/attrgroup/list/0', {errorHandler});
 }
 
 export async function queryAttrGroup(params) {
     return request(`/api/product/attrgroup/list/${params.categoryId}`, {
+        errorHandler,
         params
     });
 }

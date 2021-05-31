@@ -30,16 +30,18 @@ const UpdateForm = (props) => {
 
   useEffect(() => {
     let categoryPath;
-    queryAttrGroup(values.attrGroupId).then((result) => {
-      categoryPath = result.attrGroup.categoryPath;
-      form.setFieldsValue({
-        ...values,
-        categoryId: categoryPath
-      });
-      setFormVals({
-        ...values,
-        categoryId: categoryPath
-      })
+    queryAttrGroup(values.attrGroupId).then((response) => {
+      if(response) {
+        categoryPath = response.attrGroup.categoryPath;
+        form.setFieldsValue({
+          ...values,
+          categoryId: categoryPath
+        });
+        setFormVals({
+          ...values,
+          categoryId: categoryPath
+        });
+      }
     })
   }, []);
 

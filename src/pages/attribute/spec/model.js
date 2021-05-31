@@ -9,11 +9,15 @@ const Model = {
     },
     effects: {
         *query({ payload }, { call, put }) {
-            const response = yield call(querySpec, payload);
-            yield put({
-                type: 'getSpecAttr',
-                payload: response.page.list,
-            });
+            try {
+                const response = yield call(querySpec, payload);
+                yield put({
+                    type: 'getSpecAttr',
+                    payload: response.page.list,
+                });
+            } catch (error) {
+                console.log(error);
+            }
         },
         *clear({ }, { put }) {
             yield put({

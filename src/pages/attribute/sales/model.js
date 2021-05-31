@@ -9,11 +9,16 @@ const Model = {
     },
     effects: {
         *query({ payload }, { call, put }) {
-            const response = yield call(querySalesAttr, payload);
-            yield put({
-                type: 'getSalesAttr',
-                payload: response.page.list,
-            });
+            try {
+                const response = yield call(querySalesAttr, payload);
+                yield put({
+                    type: 'getSalesAttr',
+                    payload: response.page.list,
+                });
+            } catch (error) {
+                console.log(error);
+            }
+
         },
         *clear({ }, { put }) {
             yield put({

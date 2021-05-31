@@ -71,7 +71,7 @@ const queryAttrGroup = async (attrGroupId) => {
     try {
         return await queryAttrGroupInfo(attrGroupId);;
     } catch (error) {
-        message.error('Something went wrong, please try again!');
+        message.error('Fail to fetch attribute group info');
         return false;
     }
 };

@@ -21,7 +21,11 @@ const Model = {
           payload: response.data,
         });
       } catch (error) {
-        console.log(error)
+        console.log(error);
+        yield put({
+          type: 'queryProductCategory',
+          payload: [],
+        });
       }
     },
     *dragUpdate({ payload }, { put }) {

@@ -72,7 +72,7 @@ const queryAttr = async (attrId) => {
     try {
         return await queryAttrInfo(attrId);
     } catch (error) {
-        message.error('Something went wrong, please try again!');
+        message.error('Fail to fetch sales attribute info');
         return false;
     }
 };
@@ -177,9 +177,9 @@ const GroupTable = (props) => {
                     <a
                         onClick={() => {
                             handleUpdateModalVisible(true);
-                            queryAttr(record.attrId).then((result) => {
-                                if (result.msg === "success") {
-                                    setFormValues(result.attr);
+                            queryAttr(record.attrId).then((response) => {
+                                if (response) {
+                                    setFormValues(response.attr);
                                 }
                             })
                         }}

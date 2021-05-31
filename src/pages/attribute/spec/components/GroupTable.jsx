@@ -74,7 +74,7 @@ const queryAttr = async (attrId) => {
     try {
         return await queryAttrInfo(attrId);
     } catch (error) {
-        message.error('Something went wrong, please try again!');
+        message.error('Fail to fetch specification info');
         return false;
     }
 };
@@ -83,7 +83,7 @@ const queryAttrGroup = async (categoryId) => {
     try {
         return await queryAttrGroups(categoryId);
     } catch (error) {
-        message.error('Something went wrong, please try again!');
+        message.error('Fail to fetch attribute group of this category');
         return false;
     }
 }

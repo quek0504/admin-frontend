@@ -16,6 +16,14 @@ const AttributeRelationModal = (props) => {
         dispatch({
             type: 'attrGroup/fetchRelation',
             payload: selectedTableKey
+        }).then((response) => {
+            if(response) {
+                fetchNonRelationTable(selectedTableKey, "");
+                setRenderRelation(true);
+            } else {
+                message.error("Fail to fetch relation");
+                setRenderRelation(false);
+            }
         });
     }
 
@@ -27,7 +35,14 @@ const AttributeRelationModal = (props) => {
                 payload: {
                     attrGroupId
                 }
-            });;
+            }).then((response) => {
+                if(response) {
+                    setRenderNonRelation(true);
+                } else {
+                    message.error("Fail to fetch non relation");
+                    setRenderNonRelation(false);
+                }
+            });
         }
         // non empty search bar
         else if (keyword) {
@@ -37,13 +52,19 @@ const AttributeRelationModal = (props) => {
                     attrGroupId,
                     key: keyword,
                 },
-            })
+            }).then((response) => {
+                if(response) {
+                    setRenderNonRelation(true);
+                } else {
+                    message.error("Fail to fetch non relation");
+                    setRenderNonRelation(false);
+                }
+            });
         }
     }
 
     useEffect(() => {
         fetchRelationTable();
-        fetchNonRelationTable(selectedTableKey, "");
     }, [selectedTableKey]);
 
     // non assigned specification table state
@@ -52,6 +73,8 @@ const AttributeRelationModal = (props) => {
 
     // modal content state
     const [showRelation, setShowRelation] = useState(true);
+    const [renderRelation, setRenderRelation] = useState(false);
+    const [renderNonRelation, setRenderNonRelation] = useState(false);
 
     const relationColumns = [
         {
@@ -109,10 +132,9 @@ const AttributeRelationModal = (props) => {
                 attrGroupId: selectedTableKey
             }]
         }).then((response) => {
-            if (response.msg === "success") {
+            if (response) {
                 message.success('Attribute removed from group!');
                 fetchRelationTable();
-                fetchNonRelationTable(selectedTableKey, "");
             } else {
                 message.error('Something went wrong, please try again later!');
             }
@@ -140,12 +162,11 @@ const AttributeRelationModal = (props) => {
                     type: 'attrGroup/saveRelation',
                     payload: toSubmit
                 }).then((response) => {
-                    if (response.msg === "success") {
+                    if (response) {
                         message.success('Specifications added!');
 
                         // fetch new data
                         fetchRelationTable();
-                        fetchNonRelationTable(selectedTableKey, "");
 
                         // reset modal state
                         setSelectedToAdd([]);
@@ -176,7 +197,7 @@ const AttributeRelationModal = (props) => {
                         <ProTable
                             headerTitle="Specification"
                             rowKey="attrId"
-                            dataSource={attrGroup.relation}
+                            dataSource={renderRelation ? attrGroup.relation : []}
                             search={false}
                             columns={relationColumns}
                         />
@@ -184,7 +205,7 @@ const AttributeRelationModal = (props) => {
                         <ProTable
                             headerTitle="Add Specification"
                             rowKey="attrId"
-                            dataSource={attrGroup.nonRelation}
+                            dataSource={renderNonRelation ? attrGroup.nonRelation : []}
                             rowSelection={{
                                 onChange: (_, selectedRows) => { setSelectedToAdd(selectedRows) },
                             }}
